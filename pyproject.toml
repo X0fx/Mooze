@@ -11,4 +11,4 @@ dependencies = [
 ]
 
 [project.scripts]
-mooze = "main:start"
+mooze = "mooze.main:start"  # 👈 CHANGED: Points to the inner package folder
