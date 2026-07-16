@@ -4,8 +4,6 @@
 [![Textual](https://img.shields.io/badge/UI-Textual-green)](https://textual.textualize.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Mooze is a sleek, responsive, terminal-based desktop application for downloading high-quality audio. It bypasses DRM to intelligently translate Spotify links and fetches the best available audio directly to your machine.
-
 ---
 
 ## ✨ Features
@@ -74,18 +72,18 @@ Once installed, simply type `mooze` in any terminal to launch the dashboard.
 ### 📥 Single Song Download
 
 1. Ensure the **Batch Mode** switch is toggled  **OFF** .
-1. In the input box, paste a **Spotify Track Link** (e.g., `https://open.spotify.com/track/...`) OR type a search term (e.g., `Mozart Requiem`).
-1. Select your desired audio format from the dropdown menu.
-1. Type your save folder path (e.g., `C:/Users/YourName/Downloads` or just `./` for the current folder).
-1. Click  **Search & Download** .
+2. In the input box, paste a **Spotify Track Link** (e.g., `https://open.spotify.com/track/...`) OR type a search term (e.g., `Mozart Requiem`).
+3. Select your desired audio format from the dropdown menu.
+4. Type your save folder path (e.g., `C:/Users/YourName/Downloads` or just `./` for the current folder).
+5. Click  **Search & Download** .
 
 ### 📦 Batch Downloading
 
 1. Toggle the **Batch Mode** switch to  **ON** . The UI will dynamically expand.
-1. Paste multiple Spotify links into the text area. **You must put exactly one link per line.**
-1. Select your audio format and your save location.
-1. Click  **Download Batch** .
-1. *Note: Mooze will create a temporary folder, process all your songs, compress them into a `Mooze_Batch_Archive.zip` file in your save directory, and clean up the temporary files automatically.*
+2. Paste multiple Spotify links into the text area. **You must put exactly one link per line.**
+3. Select your audio format and your save location.
+4. Click  **Download Batch** .
+5. *Note: Mooze will create a temporary folder, process all your songs, compress them into a `Mooze_Batch_Archive.zip` file in your save directory, and clean up the temporary files automatically.*
 
 ---
 
