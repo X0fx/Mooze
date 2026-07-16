@@ -4,8 +4,6 @@
 [![Textual](https://img.shields.io/badge/UI-Textual-green)](https://textual.textualize.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Mooze is a sleek, responsive, terminal-based desktop application for downloading high-quality audio. It bypasses DRM to intelligently translate Spotify links and fetches the best available audio directly to your machine.
-
 ---
 
 ## ✨ Features
