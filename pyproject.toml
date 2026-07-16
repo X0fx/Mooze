@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mooze"
+version = "0.1.0"
+dependencies = [
+    "textual",
+    "yt-dlp"
+]
+
+[project.scripts]
+mooze = "main:start"

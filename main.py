@@ -145,6 +145,9 @@ class MoozeApp(App):
         else:
             self.notify(f"Engine Error: {message}", title="Oops!", severity="error")
 
-if __name__ == "__main__":
+def start():
     app = MoozeApp()
     app.run()
+
+if __name__ == "__main__":
+    start()
