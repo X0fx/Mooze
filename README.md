@@ -83,10 +83,11 @@ Once installed, simply type `mooze` in any terminal to launch the dashboard.
 2. Paste multiple Spotify links into the text area. **You must put exactly one link per line.**
 3. Select your audio format and your save location.
 4. Click  **Download Batch** .
-5. *Note: Mooze will create a temporary folder, process all your songs, compress them into a `Mooze_Batch_Archive.zip` file in your save directory, and clean up the temporary files automatically.*
+
+*Note: Mooze will create a temporary folder, process all your songs, compress them into a `Mooze_Batch_Archive.zip` file in your save directory, and clean up the temporary files automatically.*
 
 ---
 
-# ⚠️ Disclaimer
+## ⚠️ Disclaimer
 
 This tool is for educational purposes and personal use only. It relies on publicly available APIs and YouTube search mechanisms. Please respect digital rights and support the artists you listen to.
