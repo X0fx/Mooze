@@ -2,7 +2,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, Input, Button, Select, TextArea, Switch, Label, ProgressBar
 from textual.containers import Horizontal, Vertical
 from textual import on, work 
-from downloader import download_song 
+from .downloader import download_song 
 import os
 import shutil
 import json
