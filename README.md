@@ -26,34 +26,69 @@ Mooze is a sleek, responsive, terminal-based desktop application for downloading
 
 Mooze uses `yt-dlp` under the hood, which requires **FFmpeg** to convert video files into clean MP3/WAV audio.
 
-**Windows:** Open Command Prompt or PowerShell and run:
-
-```bash
-winget install ffmpeg
-```
-
-# Mooze 🎵
-
-A sleek, responsive, terminal-based desktop application for downloading high-quality audio directly from Spotify links or text searches. Built with Python and the Textual TUI framework.
-
-## ✨ Features
-
-* **Single Song Download:** Search by song name or paste a direct Spotify link.
-* **Batch Downloading:** Paste a list of multiple Spotify links (one per line) to download them all at once. Batch downloads are automatically packaged into a clean `.zip` archive!
-* **High-Quality Audio:** Choose your preferred output format:
-  * MP3 - High Quality (320kbps)
-  * MP3 - Normal (128kbps)
-  * WAV - Best Quality (Lossless)
-* **Smart Spotify Translation:** Bypasses DRM by automatically translating Spotify links into the correct song/artist combinations using oEmbed and Googlebot masking.
-* **Modern Terminal UI:** A beautiful, mouse-friendly, responsive dashboard with toggle switches, loading spinners, and progress notifications.
-
-## 🛠️ Prerequisites
-
-Before you run Mooze, you must have **FFmpeg** installed on your computer. This is the master audio converter the engine uses under the hood.
-
 **Windows:**
-Open Command Prompt and run:
 
-```bash
+```PowerShell
 winget install ffmpeg
 ```
+
+**MacOS:**
+
+```PowerShell
+brew install ffmpeg
+```
+
+**Linux:**
+
+```PowerShell
+sudo apt install ffmpeg
+```
+
+*(Note: Restart your terminal after installing FFmpeg so your system recognizes it.)*
+
+---
+
+## 🚀 Installation
+
+Because Mooze is packaged professionally, you can install it globally on your system.
+
+1. Clone the repository:
+
+```Shell
+git clone [https://github.com/X0fx/mooze.git](https://github.com/X0fx/mooze.git)
+cd mooze
+```
+
+2. Install the application:
+
+```Shell
+pip install -e .
+```
+
+---
+
+## 📖 User Manual
+
+Once installed, simply type `mooze` in any terminal to launch the dashboard.
+
+### 📥 Single Song Download
+
+1. Ensure the **Batch Mode** switch is toggled  **OFF** .
+1. In the input box, paste a **Spotify Track Link** (e.g., `https://open.spotify.com/track/...`) OR type a search term (e.g., `Mozart Requiem`).
+1. Select your desired audio format from the dropdown menu.
+1. Type your save folder path (e.g., `C:/Users/YourName/Downloads` or just `./` for the current folder).
+1. Click  **Search & Download** .
+
+### 📦 Batch Downloading
+
+1. Toggle the **Batch Mode** switch to  **ON** . The UI will dynamically expand.
+1. Paste multiple Spotify links into the text area. **You must put exactly one link per line.**
+1. Select your audio format and your save location.
+1. Click  **Download Batch** .
+1. *Note: Mooze will create a temporary folder, process all your songs, compress them into a `Mooze_Batch_Archive.zip` file in your save directory, and clean up the temporary files automatically.*
+
+---
+
+# ⚠️ Disclaimer
+
+This tool is for educational purposes and personal use only. It relies on publicly available APIs and YouTube search mechanisms. Please respect digital rights and support the artists you listen to.
