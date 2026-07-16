@@ -5,6 +5,28 @@ from textual import on, work
 from .downloader import download_song 
 import os
 import shutil
+import json
+
+# Define where to save the hidden settings file (e.g., C:/Users/YourName/.mooze_settings.json)
+CONFIG_FILE = os.path.expanduser("~/.mooze_settings.json")
+
+def load_settings():
+    """Reads the saved settings from the JSON file if it exists."""
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, "r") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+def save_settings(format_choice, save_location):
+    """Saves the user's choices to the JSON file."""
+    try:
+        with open(CONFIG_FILE, "w") as f:
+            json.dump({"format": format_choice, "save_location": save_location}, f)
+    except Exception:
+        pass
 
 class MoozeApp(App):
     CSS = """
@@ -13,15 +35,10 @@ class MoozeApp(App):
     #toggle-row Label { margin-right: 1; padding-top: 1; }
     #single-mode { height: auto; margin: 1; }
     #single-mode Input { width: 1fr; }
-    
-    /* NEW: Batch mode and TextArea now flex intelligently instead of acting like bullies! */
     #batch-mode { height: 1fr; margin: 1; display: none; }
     TextArea { height: 1fr; }
     #batch-controls { align: right middle; padding-right: 2; height: auto; margin-top: 1; }
-    
-    /* NEW: We force the spinner to be exactly 1 line tall so it never gets crushed */
     #my-progress-bar { height: 1; margin: 1 2; display: none; }
-    
     #options-row { dock: bottom; height: auto; align: left middle; margin: 1; }
     #options-row Select, #options-row Input { width: 1fr; margin: 0 1; }
     #options-row Select { border: tall transparent; }
@@ -64,6 +81,17 @@ class MoozeApp(App):
         
         yield Footer()
 
+    def on_mount(self):
+        """This runs automatically as soon as the app starts up."""
+        settings = load_settings()
+        
+        # If we have saved settings, inject them directly into the UI components!
+        if "format" in settings and settings["format"]:
+            self.query_one("#format-select", Select).value = settings["format"]
+            
+        if "save_location" in settings and settings["save_location"]:
+            self.query_one("#save-location", Input).value = settings["save_location"]
+
     @on(Switch.Changed)
     def toggle_views(self, event: Switch.Changed):
         single_view = self.query_one("#single-mode")
@@ -97,6 +125,9 @@ class MoozeApp(App):
         if has_error:
             self.notify("Oops! Please choose a format and a save location.", severity="error")
             return
+            
+        # NEW: The user filled everything out correctly, so save it for next time!
+        save_settings(format_select.value, save_location.value)
             
         batch_switch = self.query_one("#batch-switch", Switch)
         is_batch_mode = batch_switch.value
