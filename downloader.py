@@ -44,13 +44,14 @@ def get_spotify_query(url: str) -> str:
         
     raise ValueError("Could not translate Spotify link. Try typing the song name instead!")
 
-def download_song(search_query: str, save_location: str, format_choice: str):
+def download_song(search_query: str, save_location: str, format_choice: str, progress_callback=None):
     
     if "spotify.com" in search_query:
         search_query = get_spotify_query(search_query)
 
     codec = "mp3"
     quality = "192" 
+    embed_art = True 
     
     if format_choice == "mp3_high":
         codec = "mp3"
@@ -61,33 +62,48 @@ def download_song(search_query: str, save_location: str, format_choice: str):
     elif format_choice == "wav":
         codec = "wav"
         quality = "192"
+        embed_art = False 
+        
+    def my_hook(d):
+        if d['status'] == 'downloading':
+            downloaded = d.get('downloaded_bytes', 0)
+            total = d.get('total_bytes') or d.get('total_bytes_estimate', 0)
+            if progress_callback and total > 0:
+                progress_callback(downloaded, total)
+
+    # 1. Start with the base audio extractor
+    postprocessors: list[dict[str, Any]] = [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec': codec,
+        'preferredquality': quality,
+    }]
+    
+    # 2. Only add the Thumbnail conversion and tagger if the format supports it (MP3)
+    if embed_art:
+        # NEW: Safely convert the modern webp format to classic jpg so MP3 can read it
+        postprocessors.append({
+            'key': 'FFmpegThumbnailsConvertor',
+            'format': 'jpg',
+        })
+        # Embed the newly converted jpg
+        postprocessors.append({
+            'key': 'EmbedThumbnail',
+        })
+        
+    # 3. Always add the text metadata (Title/Artist)
+    postprocessors.append({
+        'key': 'FFmpegMetadata',
+        'add_metadata': True,
+    })
 
     options: Any = {
         'format': 'bestaudio/best',
         'outtmpl': f'{save_location}/%(title)s.%(ext)s',
         'default_search': 'ytsearch1:',
         'noplaylist': True,
-        
-        # NEW: Tell the engine to download the album art/thumbnail!
-        'writethumbnail': True, 
-        
-        'postprocessors': [
-            # 1. Convert the audio to MP3/WAV
-            {
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': codec,
-                'preferredquality': quality,
-            },
-            # NEW 2. Embed the downloaded thumbnail into the audio file as cover art
-            {
-                'key': 'EmbedThumbnail',
-            },
-            # NEW 3. Write the Artist, Title, and Date tags into the file's metadata
-            {
-                'key': 'FFmpegMetadata',
-                'add_metadata': True,
-            }
-        ],
+        'writethumbnail': embed_art, 
+        'progress_hooks': [my_hook], 
+        'postprocessors': postprocessors,
     }
     
     with yt_dlp.YoutubeDL(options) as ydl:

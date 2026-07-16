@@ -1,17 +1,16 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, Input, Button, Select, TextArea, Switch, Label, LoadingIndicator
+# NEW: We swapped LoadingIndicator for ProgressBar
+from textual.widgets import Header, Footer, Input, Button, Select, TextArea, Switch, Label, ProgressBar
 from textual.containers import Horizontal, Vertical
 from textual import on, work 
-from .downloader import download_song 
+from downloader import download_song 
 import os
 import shutil
 import json
 
-# Define where to save the hidden settings file (e.g., C:/Users/YourName/.mooze_settings.json)
 CONFIG_FILE = os.path.expanduser("~/.mooze_settings.json")
 
 def load_settings():
-    """Reads the saved settings from the JSON file if it exists."""
     if os.path.exists(CONFIG_FILE):
         try:
             with open(CONFIG_FILE, "r") as f:
@@ -21,7 +20,6 @@ def load_settings():
     return {}
 
 def save_settings(format_choice, save_location):
-    """Saves the user's choices to the JSON file."""
     try:
         with open(CONFIG_FILE, "w") as f:
             json.dump({"format": format_choice, "save_location": save_location}, f)
@@ -38,7 +36,10 @@ class MoozeApp(App):
     #batch-mode { height: 1fr; margin: 1; display: none; }
     TextArea { height: 1fr; }
     #batch-controls { align: right middle; padding-right: 2; height: auto; margin-top: 1; }
-    #my-progress-bar { height: 1; margin: 1 2; display: none; }
+    
+    /* NEW: Give our progress bar a bit of breathing room */
+    #my-progress-bar { height: auto; margin: 1 2; display: none; }
+    
     #options-row { dock: bottom; height: auto; align: left middle; margin: 1; }
     #options-row Select, #options-row Input { width: 1fr; margin: 0 1; }
     #options-row Select { border: tall transparent; }
@@ -65,7 +66,8 @@ class MoozeApp(App):
                 with Horizontal(id="batch-controls"):
                     yield Button("Download Batch", variant="success")
             
-            yield LoadingIndicator(id="my-progress-bar")
+            # NEW: Add the progress bar widget (ETA is on by default!)
+            yield ProgressBar(id="my-progress-bar")
         
         with Horizontal(id="options-row"):
             yield Select(
@@ -82,10 +84,8 @@ class MoozeApp(App):
         yield Footer()
 
     def on_mount(self):
-        """This runs automatically as soon as the app starts up."""
         settings = load_settings()
         
-        # If we have saved settings, inject them directly into the UI components!
         if "format" in settings and settings["format"]:
             self.query_one("#format-select", Select).value = settings["format"]
             
@@ -126,7 +126,6 @@ class MoozeApp(App):
             self.notify("Oops! Please choose a format and a save location.", severity="error")
             return
             
-        # NEW: The user filled everything out correctly, so save it for next time!
         save_settings(format_select.value, save_location.value)
             
         batch_switch = self.query_one("#batch-switch", Switch)
@@ -139,15 +138,27 @@ class MoozeApp(App):
             raw_text = self.query_one("#single-search-input", Input).value
             songs_to_download = [raw_text.strip()]
             
-        loading_spinner = self.query_one("#my-progress-bar", LoadingIndicator)
-        loading_spinner.display = True
+        # NEW: Show the progress bar and reset it to zero
+        progress_bar = self.query_one("#my-progress-bar", ProgressBar)
+        progress_bar.display = True
+        progress_bar.update(total=100, progress=0)
         
         self.notify("Starting your download process! Please wait...")
         self.run_engine(songs_to_download, save_location.value, format_select.value, is_batch_mode)
 
+    # NEW: This helper safely updates the UI from the background thread
+    def update_progress_ui(self, downloaded, total):
+        progress_bar = self.query_one("#my-progress-bar", ProgressBar)
+        progress_bar.update(total=total, progress=downloaded)
+
     @work(thread=True)
     def run_engine(self, songs, save_path, audio_format, is_batch):
         try:
+            # NEW: We create the callback that the engine will trigger
+            def progress_callback(downloaded, total):
+                # We must use call_from_thread to talk to the Textual UI safely
+                self.app.call_from_thread(self.update_progress_ui, downloaded, total)
+
             if is_batch and len(songs) > 1:
                 working_path = os.path.join(save_path, "Mooze_Temp_Batch")
                 os.makedirs(working_path, exist_ok=True)
@@ -156,7 +167,10 @@ class MoozeApp(App):
 
             for song in songs:
                 if song.strip(): 
-                    download_song(song.strip(), working_path, audio_format)
+                    # NEW: We reset the bar to 0 for every new song in a batch
+                    self.app.call_from_thread(self.update_progress_ui, 0, 100)
+                    # Pass the callback into the engine
+                    download_song(song.strip(), working_path, audio_format, progress_callback)
             
             if is_batch and len(songs) > 1:
                 zip_filename = os.path.join(save_path, "Mooze_Batch_Archive")
@@ -168,8 +182,8 @@ class MoozeApp(App):
             self.app.call_from_thread(self.finish_download, False, str(e))
             
     def finish_download(self, success: bool, message: str):
-        loading_spinner = self.query_one("#my-progress-bar", LoadingIndicator)
-        loading_spinner.display = False
+        progress_bar = self.query_one("#my-progress-bar", ProgressBar)
+        progress_bar.display = False
         
         if success:
             self.notify(message, title="Success!")
