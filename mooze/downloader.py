@@ -18,12 +18,7 @@ def get_spotify_query(url: str) -> str:
         title_match = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE)
         if title_match:
             raw_title = title_match.group(1)
-            
-            clean_title = raw_title.replace('| Spotify', '')
-            clean_title = clean_title.replace('- song and lyrics by', ' ')
-            clean_title = clean_title.replace('- song by', ' ')
-            clean_title = clean_title.replace('- single by', ' ')
-            
+            clean_title = raw_title.replace('| Spotify', '').replace('- song and lyrics by', ' ').replace('- song by', ' ').replace('- single by', ' ')
             if clean_title.strip():
                 return clean_title.strip()
     except Exception:
@@ -50,25 +45,24 @@ def download_song(search_query: str, save_location: str, format_choice: str, pro
         search_query = get_spotify_query(search_query)
 
     codec = "mp3"
-    quality = "192" 
+    quality = "192"
     embed_art = True 
     
-    # --- NEW: Expanded Format Support ---
-    if format_choice == "mp3_high":
-        codec, quality = "mp3", "320"
-    elif format_choice == "mp3_normal":
-        codec, quality = "mp3", "128"
-    elif format_choice == "wav":
-        codec, quality = "wav", "192"
+    # 1. Parse the custom syntax (e.g. ".flac, 192")
+    try:
+        parts = format_choice.split(",")
+        if len(parts) == 2:
+            codec = parts[0].strip()[1:].lower()  # Removes the '.' and forces lowercase
+            # Extract just the digits in case they accidentally typed "192kbps"
+            quality_str = ''.join(filter(str.isdigit, parts[1]))
+            if quality_str:
+                quality = quality_str
+    except Exception:
+        pass  # Fallback to mp3 defaults if parsing catastrophically fails
+
+    # 2. Prevent FFmpeg crashes by disabling image art for specific containers
+    if codec in ["wav", "flac", "opus", "ogg"]:
         embed_art = False 
-    elif format_choice == "flac":
-        codec, quality = "flac", "192"
-        embed_art = False # Disable to prevent FFmpeg container crashes
-    elif format_choice == "m4a":
-        codec, quality = "m4a", "192"
-    elif format_choice == "opus":
-        codec, quality = "opus", "192"
-        embed_art = False
         
     def my_hook(d):
         if d['status'] == 'downloading':

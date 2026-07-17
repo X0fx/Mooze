@@ -1,5 +1,5 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, Input, Button, Select, TextArea, Switch, Label, ProgressBar
+from textual.widgets import Header, Footer, Input, Button, TextArea, Label, ProgressBar, TabbedContent, TabPane, Collapsible
 from textual.containers import Horizontal, Vertical
 from textual import on, work, events
 from textual.binding import Binding
@@ -11,25 +11,11 @@ import sys
 import subprocess
 
 CONFIG_FILE = os.path.expanduser("~/.mooze_settings.json")
-BATCH_PLACEHOLDER = "Paste your list of Spotify links below (One per line):\n"
 
 class StaticHeader(Header):
-    def action_toggle_tall(self):
-        """Override Textual's default behavior so clicking does absolutely nothing."""
-        pass
-
-# NEW: We subclass TextArea to make a smart widget that handles its own focus events!
-class BatchTextArea(TextArea):
-    def on_focus(self, event: events.Focus):
-        """Clears the text area immediately when the user clicks into it."""
-        if BATCH_PLACEHOLDER.strip() in self.text:
-            self.text = ""
-
-    def on_blur(self, event: events.Blur):
-        """Puts the placeholder back if they click away and left it empty."""
-        if not self.text.strip():
-            self.text = BATCH_PLACEHOLDER
-
+    def on_click(self, event: events.Click):
+        event.stop()
+        event.prevent_default()
 
 def load_settings():
     if os.path.exists(CONFIG_FILE):
@@ -56,24 +42,25 @@ class MoozeApp(App):
     COMMAND_PALETTE_BINDING = ""
 
     CSS = """
-    #main-area { height: 1fr; }
-    #toggle-row { height: auto; margin: 1; align: left middle; }
-    #toggle-row Label { margin-right: 1; padding-top: 1; }
-    #single-mode { height: auto; margin: 1; }
-    #single-mode Input { width: 1fr; }
-    #batch-mode { height: auto; margin: 1; display: none; }
+    #main-area { height: 1fr; margin: 1; }
     
+    /* FIXED: Changed from 1fr to auto so it hugs the search inputs tightly */
+    #tabs { height: auto; }
+    #single-tab, #batch-tab { padding: 1 2; height: auto; }
+    
+    #single-search-input { margin-bottom: 1; }
+    
+    #batch-label { margin-bottom: 1; color: $text-muted; }
     #batch-search-input { height: auto; min-height: 3; max-height: 12; }
     
-    #batch-controls { align: right middle; padding-right: 2; height: auto; margin-top: 1; }
+    #download-settings { margin-top: 1; height: auto; }
+    #options-row { height: auto; align: left middle; padding-top: 1; }
+    #options-row Input { width: 1fr; margin: 0 1; }
+    
+    .download-btn { width: 100%; margin-top: 1; }
     #my-progress-bar { height: auto; margin: 1 2; display: none; }
     
-    #options-row { dock: bottom; height: auto; align: left middle; margin: 1; }
-    #options-row Select, #options-row Input { width: 1fr; margin: 0 1; }
-    #options-row Select { border: tall transparent; }
-    
-    #options-row Select.error, #options-row Input.error, 
-    #single-search-input.error, #batch-search-input.error { border: tall red; }
+    #options-row Input.error, #single-search-input.error, #batch-search-input.error { border: tall red; }
     """
 
     BINDINGS = [
@@ -90,36 +77,21 @@ class MoozeApp(App):
         yield StaticHeader(show_clock=False)
         
         with Vertical(id="main-area"):
-            with Horizontal(id="toggle-row"):
-                yield Label("Batch Mode:")
-                yield Switch(id="batch-switch")
+            with TabbedContent(id="tabs"):
+                with TabPane("Single Download", id="single-tab"):
+                    yield Input(placeholder="Paste a Spotify link or search for a song here...", id="single-search-input")
+                    
+                with TabPane("Batch Download", id="batch-tab"):
+                    yield Label("Paste your list of Spotify links (One per line):", id="batch-label")
+                    yield TextArea(id="batch-search-input")
             
-            with Horizontal(id="single-mode"):
-                yield Input(placeholder="Paste a Spotify link or search for a song here...", id="single-search-input")
-                yield Button("Search & Download", variant="success")
-                
-            with Vertical(id="batch-mode"):
-                # UPDATED: We render our custom smart widget here instead of the default TextArea
-                yield BatchTextArea(text=BATCH_PLACEHOLDER, id="batch-search-input")
-                with Horizontal(id="batch-controls"):
-                    yield Button("Download Batch", variant="success")
+            with Collapsible(title="Download Settings (Format & Save Path)", id="download-settings"):
+                with Horizontal(id="options-row"):
+                    yield Input(placeholder="Format (e.g. .flac, 192)", id="format-input")
+                    yield Input(placeholder="Save Path (e.g. C:/Music)", id="save-location")
             
+            yield Button("Start Download", variant="success", id="download-btn", classes="download-btn")
             yield ProgressBar(id="my-progress-bar")
-        
-        with Horizontal(id="options-row"):
-            yield Select(
-                options=[
-                    ("MP3 - High Quality (320kbps)", "mp3_high"),
-                    ("MP3 - Normal (128kbps)", "mp3_normal"),
-                    ("M4A - Good Quality", "m4a"),
-                    ("FLAC - Best Quality (Lossless)", "flac"),
-                    ("WAV - Best Quality (Uncompressed)", "wav"),
-                    ("OPUS - Best File Size", "opus")
-                ],
-                prompt="Format...",
-                id="format-select"
-            )
-            yield Input(placeholder="Save Path (e.g., C:/Music)", id="save-location")
         
         yield Footer()
 
@@ -132,7 +104,7 @@ class MoozeApp(App):
             self.theme = "textual-dark"
             
         if "format" in settings and settings["format"]:
-            self.query_one("#format-select", Select).value = settings["format"]
+            self.query_one("#format-input", Input).value = settings["format"]
             
         if "save_location" in settings and settings["save_location"]:
             self.query_one("#save-location", Input).value = settings["save_location"]
@@ -140,7 +112,7 @@ class MoozeApp(App):
     @on(events.MouseDown)
     def handle_background_click(self, event: events.MouseDown):
         widget, _ = self.screen.get_widget_at(event.screen_x, event.screen_y)
-        if widget and widget.id in ("main-area", "toggle-row", "single-mode", "batch-mode", "options-row"):
+        if widget and widget.id in ("main-area", "options-row", "single-tab", "batch-tab", "download-settings"):
             self.set_focus(None)
 
     def action_remove_focus(self):
@@ -150,26 +122,14 @@ class MoozeApp(App):
         footer = self.query_one(Footer)
         footer.display = not footer.display
 
-    @on(Switch.Changed)
-    def toggle_views(self, event: Switch.Changed):
-        single_view = self.query_one("#single-mode")
-        batch_view = self.query_one("#batch-mode")
-        if event.value:
-            single_view.display = False
-            batch_view.display = True
-        else:
-            single_view.display = True
-            batch_view.display = False
-
     # =========================================================================
     # COMMAND PALETTE
     # =========================================================================
     def _apply_and_save_theme(self, theme_name: str):
         self.theme = theme_name
-        fmt = self.query_one("#format-select", Select).value
+        fmt = self.query_one("#format-input", Input).value
         loc = self.query_one("#save-location", Input).value
-        fmt_str = str(fmt) if fmt != Select.BLANK else None
-        save_settings(fmt_str, loc, theme_name)
+        save_settings(fmt, loc, theme_name)
         self.notify(f"Theme updated to {theme_name}", severity="information")
 
     def action_theme_dark(self): self._apply_and_save_theme("textual-dark")
@@ -182,7 +142,7 @@ class MoozeApp(App):
 
     def action_clear_inputs(self):
         self.query_one("#single-search-input", Input).value = ""
-        self.query_one("#batch-search-input", TextArea).text = BATCH_PLACEHOLDER
+        self.query_one("#batch-search-input", TextArea).text = ""
         self.notify("All inputs cleared.", severity="information")
 
     def action_open_download_folder(self):
@@ -198,36 +158,59 @@ class MoozeApp(App):
             self.notify(f"Could not open folder: {e}", severity="error")
 
     # =========================================================================
-    # DOWNLOAD LOGIC
+    # DOWNLOAD LOGIC & STRICT VALIDATION
     # =========================================================================
 
     @on(Button.Pressed)
-    def start_downloading(self):
-        format_select = self.query_one("#format-select", Select)
+    def start_downloading(self, event: Button.Pressed):
+        if event.button.id != "download-btn":
+            return
+            
+        format_input = self.query_one("#format-input", Input)
         save_location = self.query_one("#save-location", Input)
         single_input = self.query_one("#single-search-input", Input)
         batch_input = self.query_one("#batch-search-input", TextArea)
         
-        format_select.remove_class("error")
+        format_input.remove_class("error")
         save_location.remove_class("error")
         single_input.remove_class("error")
         batch_input.remove_class("error")
         
         has_error = False
         
-        if format_select.value == Select.BLANK:
-            format_select.add_class("error")
+        raw_format = format_input.value.strip()
+        is_valid_format = False
+        
+        if raw_format.startswith(".") and "," in raw_format:
+            parts = raw_format.split(",")
+            ext = parts[0].strip()[1:] 
+            try:
+                bitrate_str = ''.join(filter(str.isdigit, parts[1]))
+                bitrate = int(bitrate_str) if bitrate_str else 0
+                
+                if 92 <= bitrate <= 320 and ext.isalnum():
+                    is_valid_format = True
+                    format_input.value = f".{ext.lower()}, {bitrate}"
+            except ValueError:
+                pass
+
+        if not is_valid_format:
+            format_input.add_class("error")
             has_error = True
+            self.notify("Format must be '.ext, bitrate' (e.g. .mp3, 320). Bitrate limit: 92-320.", severity="error", timeout=6)
+            self.query_one("#download-settings", Collapsible).collapsed = False
+            
         if save_location.value.strip() == "":
             save_location.add_class("error")
             has_error = True
+            self.query_one("#download-settings", Collapsible).collapsed = False
             
-        batch_switch = self.query_one("#batch-switch", Switch)
-        is_batch_mode = batch_switch.value
+        active_tab = self.query_one("#tabs", TabbedContent).active
+        is_batch_mode = (active_tab == "batch-tab")
         
         if is_batch_mode:
             raw_text = batch_input.text
-            if not raw_text.strip() or BATCH_PLACEHOLDER.strip() in raw_text:
+            if not raw_text.strip():
                 batch_input.add_class("error")
                 has_error = True
             songs_to_download = raw_text.strip().split("\n")
@@ -239,17 +222,18 @@ class MoozeApp(App):
             songs_to_download = [raw_text.strip()]
             
         if has_error:
-            self.notify("Oops! Please fill out all required fields.", severity="error")
+            if is_valid_format: 
+                self.notify("Oops! Please fill out all required fields.", severity="error")
             return
             
-        save_settings(format_select.value, save_location.value, self.theme)
+        save_settings(format_input.value, save_location.value, self.theme)
             
         progress_bar = self.query_one("#my-progress-bar", ProgressBar)
         progress_bar.display = True
         progress_bar.update(total=100, progress=0)
         
         self.notify("Starting your download process! Please wait...")
-        self.run_engine(songs_to_download, save_location.value, format_select.value, is_batch_mode)
+        self.run_engine(songs_to_download, save_location.value, format_input.value, is_batch_mode)
 
     def update_progress_ui(self, downloaded, total):
         progress_bar = self.query_one("#my-progress-bar", ProgressBar)
@@ -268,7 +252,7 @@ class MoozeApp(App):
                 working_path = save_path
 
             for song in songs:
-                if song.strip() and BATCH_PLACEHOLDER.strip() not in song: 
+                if song.strip(): 
                     self.app.call_from_thread(self.update_progress_ui, 0, 100)
                     download_song(song.strip(), working_path, audio_format, progress_callback)
             
@@ -293,7 +277,6 @@ class MoozeApp(App):
     # DPI-AWARE SCREENSHOT TOOL
     # =========================================================================
     def action_save_png(self):
-        """Captures the active terminal window and saves as PNG using Pillow."""
         try:
             from PIL import ImageGrab
             import sys
