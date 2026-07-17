@@ -53,16 +53,22 @@ def download_song(search_query: str, save_location: str, format_choice: str, pro
     quality = "192" 
     embed_art = True 
     
+    # --- NEW: Expanded Format Support ---
     if format_choice == "mp3_high":
-        codec = "mp3"
-        quality = "320"
+        codec, quality = "mp3", "320"
     elif format_choice == "mp3_normal":
-        codec = "mp3"
-        quality = "128"
+        codec, quality = "mp3", "128"
     elif format_choice == "wav":
-        codec = "wav"
-        quality = "192"
+        codec, quality = "wav", "192"
         embed_art = False 
+    elif format_choice == "flac":
+        codec, quality = "flac", "192"
+        embed_art = False # Disable to prevent FFmpeg container crashes
+    elif format_choice == "m4a":
+        codec, quality = "m4a", "192"
+    elif format_choice == "opus":
+        codec, quality = "opus", "192"
+        embed_art = False
         
     def my_hook(d):
         if d['status'] == 'downloading':
@@ -71,26 +77,21 @@ def download_song(search_query: str, save_location: str, format_choice: str, pro
             if progress_callback and total > 0:
                 progress_callback(downloaded, total)
 
-    # 1. Start with the base audio extractor
     postprocessors: list[dict[str, Any]] = [{
         'key': 'FFmpegExtractAudio',
         'preferredcodec': codec,
         'preferredquality': quality,
     }]
     
-    # 2. Only add the Thumbnail conversion and tagger if the format supports it (MP3)
     if embed_art:
-        # NEW: Safely convert the modern webp format to classic jpg so MP3 can read it
         postprocessors.append({
             'key': 'FFmpegThumbnailsConvertor',
             'format': 'jpg',
         })
-        # Embed the newly converted jpg
         postprocessors.append({
             'key': 'EmbedThumbnail',
         })
         
-    # 3. Always add the text metadata (Title/Artist)
     postprocessors.append({
         'key': 'FFmpegMetadata',
         'add_metadata': True,
