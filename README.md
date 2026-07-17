@@ -1,8 +1,19 @@
 # 🎵 Mooze
 
-[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://python.org)
-[![Textual](https://img.shields.io/badge/UI-Textual-green)](https://textual.textualize.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+<!-- PROJECT BADGES -->
+
+<div align="left">
+  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python Version" />
+  <img src="https://img.shields.io/badge/UI-Textual%20TUI-22C55E?style=flat-square&logo=gnuterminal&logoColor=white" alt="Textual TUI" />
+  <img src="https://img.shields.io/badge/Engine-yt--dlp-FF0000?style=flat-square&logo=youtube&logoColor=white" alt="yt-dlp Engine" />
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-4B5563?style=flat-square" alt="Platform Support" />
+  <img src="https://img.shields.io/badge/License-MIT-F59E0B?style=flat-square&logo=opensourceinitiative&logoColor=white" alt="MIT License" />
+</div>
+
+---
+
+![1784285736694](image/README/1784285736694.png)
 
 ---
 
