@@ -1,15 +1,30 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "mooze"
-version = "0.1.0"
+version = "1.0.0"
+authors = [
+  { name="Reyhan Janus", email="reyhanjanus@gmail.com" },
+]
+description = "A modern, TUI-based Spotify and YouTube audio downloader."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+]
 dependencies = [
-    "textual",
-    "yt-dlp",
-    "pillow"
+    "textual>=0.38.1",
+    "yt-dlp>=2023.10.13",
+    "pillow>=10.0.0"
 ]
 
 [project.scripts]
-mooze = "mooze.main:start"  # 👈 CHANGED: Points to the inner package folder
+mooze = "mooze.main:start"
+
+[tool.setuptools]
+packages = ["mooze"]
