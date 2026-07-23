@@ -27,6 +27,7 @@
             padding: 20px 40px;
             margin: 30px 0;
             box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            text-align: left;
         }
         .code {
             color: #2ea043;
@@ -45,7 +46,15 @@
             transition: 0.2s;
         }
         .btn:hover { background-color: #2ea043; }
-        .ascii { color: #2ea043; white-space: pre; font-size: 0.8rem; margin-bottom: 20px; }
+        
+        /* FIXED: Added text-align: left so the ASCII maintains its proper block shape */
+        .ascii { 
+            color: #2ea043; 
+            white-space: pre; 
+            font-size: 0.8rem; 
+            margin-bottom: 20px; 
+            text-align: left; 
+        }
     </style>
 </head>
 <body>
@@ -61,8 +70,9 @@
     <h1>Mooze</h1>
     <p>A sleek, ultra-responsive Terminal User Interface (TUI) music downloading dashboard. Powered by textual and yt-dlp.</p>
 
+    <!-- FIXED: Removed the -dl from the pip install command -->
     <div class="terminal-box">
-        <span style="color: #8b949e;">$</span> <span class="code">pip install mooze-dl</span><br><br>
+        <span style="color: #8b949e;">$</span> <span class="code">pip install mooze</span><br><br>
         <span style="color: #8b949e;">$</span> <span class="code">mooze</span>
     </div>
 
