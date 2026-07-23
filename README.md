@@ -12,7 +12,10 @@
 
 ---
 
-![mooze](image/README/mooze.png)
+
+<p align="center">
+  <img src="assets/mooze.png" alt="Mooze Dashboard Interface" width="700">
+</p>
 
 ---
 
