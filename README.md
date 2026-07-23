@@ -1,6 +1,5 @@
 # 🎵 Mooze
 
-
 <!-- PROJECT BADGES -->
 
 <div align="left">
@@ -13,65 +12,56 @@
 
 ---
 
-![1784285736694](image/README/1784285736694.png)
+![mooze](image/README/mooze.png)
 
 ---
 
 ## ✨ Features
 
-* **Dual Download Modes:**
-  * **Single Mode:** Paste a Spotify track link or type a raw search query (e.g., "Coldplay Yellow").
-  * **Batch Mode:** Paste a list of multiple Spotify links (one per line) to download them all at once. Batch downloads are automatically zipped into a neat archive!
-* **Smart Spotify Translation:** Bypasses web-scrapers using oEmbed and Googlebot masking to accurately extract Track + Artist data.
-* **Audiophile Quality:** Choose your preferred output:
-  * MP3 - High Quality (320kbps)
-  * MP3 - Normal (128kbps)
-  * WAV - Best Quality (Lossless)
-* **Modern Terminal UI:** Built with Textual, featuring mouse support, smooth toggle switches, and background asynchronous workers to keep the UI perfectly responsive while downloading.
+* **Tabbed Workspace Navigation:** Seamless switching between dedicated single-track queries, high-volume batch input feeds, and persistent download history.
+* **Smart Spotify Playlist & Album Scraper:** Paste a single Spotify Playlist or Album link and Mooze will automatically expand and queue every track in the list.
+* **Live Queue Sidebar:** Real-time visual tracking of batch progress with dynamic status indicators (⏳ Pending, ▶ Downloading, ✅ Finished, ❌ Failed).
+* **Built-in Terminal Audio Player:** Preview finished downloads directly inside the terminal dashboard powered by `pygame`.
+* **Persistent Download History:** Automatically logs past downloads to a local history ledger accessible from the UI.
+* **Silent Auto-Updater:** Automatically checks PyPI on startup to notify you when a new release of `mooze` is ready.
+* **Power-User Syntax Parser:** Replaces rigid dropdown selections with a strict text-based format specification engine, parsing raw target extensions and custom bitrates on the fly.
+* **Collapsible Environment Control:** A clean, expandable contextual parameter drawer housing environment variables like destination paths and custom format syntax.
 
 ---
 
 ## 🛠️ Prerequisites
 
-Mooze uses `yt-dlp` under the hood, which requires **FFmpeg** to convert video files into clean MP3/WAV audio.
+Mooze handles processing down to raw audio streams via `yt-dlp`. An installation of **FFmpeg** must be globally discoverable in your system environment variable path.
 
-**Windows:**
+### Package Manager Directives
 
-```PowerShell
-winget install ffmpeg
-```
 
-**MacOS:**
-
-```PowerShell
-brew install ffmpeg
-```
-
-**Linux:**
-
-```PowerShell
-sudo apt install ffmpeg
-```
-
-*(Note: Restart your terminal after installing FFmpeg so your system recognizes it.)*
+| Operating System     | Command                   |
+| :--------------------- | :-------------------------- |
+| **Windows** (WinGet) | `winget install ffmpeg`   |
+| **macOS** (Homebrew) | `brew install ffmpeg`     |
+| **Linux** (APT)      | `sudo apt install ffmpeg` |
 
 ---
 
 ## 🚀 Installation
 
-Because Mooze is packaged professionally, you can install it globally on your system.
+Install Mooze directly from PyPI or editable local development mode:
 
-1. Clone the repository:
+### 1. Direct Installation via PyPI
+
+```Shell
+pip install mooze
+pip install pygame
+```
+
+### 2. From Source Tree
 
 ```Shell
 git clone [https://github.com/X0fx/mooze.git](https://github.com/X0fx/mooze.git)
 cd mooze
-```
-
-2. Install the application:
-
-```Shell
 pip install -e .
+pip install pygame
 ```
 
 ---
@@ -80,22 +70,37 @@ pip install -e .
 
 Once installed, simply type `mooze` in any terminal to launch the dashboard.
 
-### 📥 Single Song Download
+### 🎛️ Audio Format Syntax Matrix
 
-1. Ensure the **Batch Mode** switch is toggled  **OFF** .
-2. In the input box, paste a **Spotify Track Link** (e.g., `https://open.spotify.com/track/...`) OR type a search term (e.g., `Mozart Requiem`).
-3. Select your desired audio format from the dropdown menu.
-4. Type your save folder path (e.g., `C:/Users/YourName/Downloads` or just `./` for the current folder).
-5. Click  **Search & Download** .
+Open **Download Settings** and define your target format using the syntax input (`.[ext], [bitrate]`). Bitrates are bounded between **92 kbps** and  **320 kbps** .
 
-### 📦 Batch Downloading
 
-1. Toggle the **Batch Mode** switch to  **ON** . The UI will dynamically expand.
-2. Paste multiple Spotify links into the text area. **You must put exactly one link per line.**
-3. Select your audio format and your save location.
-4. Click  **Download Batch** .
+| **Syntax Input** | **Extracted Codec** | **Output Fidelity**     | **Metadata Embedding**     |
+| ------------------ | --------------------- | ------------------------- | ---------------------------- |
+| `.mp3, 320`      | MP3                 | High-Bitrate Master     | Enabled (Cover Art + Tags) |
+| `.mp3, 128`      | MP3                 | Standard Compressed     | Enabled (Cover Art + Tags) |
+| `.m4a, 192`      | M4A                 | AAC Container Stream    | Enabled (Cover Art + Tags) |
+| `.flac, 256`     | FLAC                | Compressed Lossless     | Metadata Tags Only         |
+| `.wav, 192`      | WAV                 | PCM Uncompressed Linear | Metadata Tags Only         |
+| `.opus, 160`     | OPUS                | Low-latency Interactive | Metadata Tags Only         |
 
-*Note: Mooze will create a temporary folder, process all your songs, compress them into a `Mooze_Batch_Archive.zip` file in your save directory, and clean up the temporary files automatically.*
+### 📥 Execution Modes
+
+1. Single Track / Playlist Query
+
+   * Select the **Single Download** tab.
+   * Paste a track name, raw Spotify track link, or a  **Spotify Playlist / Album link** .
+   * Click  **Start Download** . The Live Queue sidebar will expand automatically if processing multiple songs!
+2. Batch Links
+
+   * Select the **Batch Download** tab.
+   * Paste multiple Spotify links (one per line).
+   * Click  **Start Download** . Multi-song batches are automatically zipped into `Mooze_Batch_Archive.zip`.
+3. Live Preview & Audio Player
+
+   * Once a track completes, the **▶ Play** button on the bottom Audio Bar will unlock.
+   * Click **▶ Play** to preview your downloaded song instantly. Click **⏹ Stop** to halt audio.
+   * Visit the **History** tab to review previous downloads.
 
 ---
 
