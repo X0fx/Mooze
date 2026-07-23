@@ -2,7 +2,27 @@ import yt_dlp
 import urllib.request
 import json
 import re
+import os
 from typing import Any
+
+def expand_if_playlist(url: str) -> list[str]:
+    """Scrapes a Spotify playlist or album URL to extract all track links natively."""
+    if "spotify.com/playlist" in url or "spotify.com/album" in url:
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            html = urllib.request.urlopen(req).read().decode('utf-8')
+            track_ids = re.findall(r'href="https://open.spotify.com/track/([a-zA-Z0-9]+)"', html)
+            
+            seen = set()
+            urls = []
+            for tid in track_ids:
+                if tid not in seen:
+                    seen.add(tid)
+                    urls.append(f"https://open.spotify.com/track/{tid}")
+            return urls if urls else [url]
+        except Exception:
+            return [url]
+    return [url]
 
 def get_spotify_query(url: str) -> str:
     """Uses a Googlebot disguise to extract both the song title AND the artist."""
@@ -39,8 +59,7 @@ def get_spotify_query(url: str) -> str:
         
     raise ValueError("Could not translate Spotify link. Try typing the song name instead!")
 
-def download_song(search_query: str, save_location: str, format_choice: str, progress_callback=None):
-    
+def download_song(search_query: str, save_location: str, format_choice: str, progress_callback=None) -> str:
     if "spotify.com" in search_query:
         search_query = get_spotify_query(search_query)
 
@@ -48,19 +67,16 @@ def download_song(search_query: str, save_location: str, format_choice: str, pro
     quality = "192"
     embed_art = True 
     
-    # 1. Parse the custom syntax (e.g. ".flac, 192")
     try:
         parts = format_choice.split(",")
         if len(parts) == 2:
-            codec = parts[0].strip()[1:].lower()  # Removes the '.' and forces lowercase
-            # Extract just the digits in case they accidentally typed "192kbps"
+            codec = parts[0].strip()[1:].lower()
             quality_str = ''.join(filter(str.isdigit, parts[1]))
             if quality_str:
                 quality = quality_str
     except Exception:
-        pass  # Fallback to mp3 defaults if parsing catastrophically fails
+        pass 
 
-    # 2. Prevent FFmpeg crashes by disabling image art for specific containers
     if codec in ["wav", "flac", "opus", "ogg"]:
         embed_art = False 
         
@@ -78,18 +94,10 @@ def download_song(search_query: str, save_location: str, format_choice: str, pro
     }]
     
     if embed_art:
-        postprocessors.append({
-            'key': 'FFmpegThumbnailsConvertor',
-            'format': 'jpg',
-        })
-        postprocessors.append({
-            'key': 'EmbedThumbnail',
-        })
+        postprocessors.append({'key': 'FFmpegThumbnailsConvertor', 'format': 'jpg'})
+        postprocessors.append({'key': 'EmbedThumbnail'})
         
-    postprocessors.append({
-        'key': 'FFmpegMetadata',
-        'add_metadata': True,
-    })
+    postprocessors.append({'key': 'FFmpegMetadata', 'add_metadata': True})
 
     options: Any = {
         'format': 'bestaudio/best',
@@ -102,4 +110,10 @@ def download_song(search_query: str, save_location: str, format_choice: str, pro
     }
     
     with yt_dlp.YoutubeDL(options) as ydl:
-        ydl.download([search_query])
+        info = ydl.extract_info(search_query, download=True)
+        if not info:
+            raise ValueError("Could not extract media metadata.")
+        raw_filepath = ydl.prepare_filename(info)
+        base_path, _ = os.path.splitext(raw_filepath)
+        # Return the exact final file path so the audio player can target it
+        return f"{base_path}.{codec}"
