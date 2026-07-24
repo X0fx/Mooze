@@ -1,0 +1,153 @@
+/* Import Fira Code for that Nerd Font/Terminal aesthetic */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&display=swap');
+
+:root {
+    --bg: #09090b;
+    --surface: #18181b;
+    --border: #27272a;
+    --text-main: #fafafa;
+    --text-muted: #a1a1aa;
+    --accent: #22c55e;
+    --accent-glow: rgba(34, 197, 94, 0.5);
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+    scroll-behavior: smooth; /* Enables smooth scrolling for anchor links */
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+#plasma-canvas {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: -1; pointer-events: none;
+}
+
+nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 2rem; border-bottom: 1px solid var(--border);
+    background: rgba(9, 9, 11, 0.7); backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 50;
+}
+
+.logo { font-family: var(--font-mono); font-weight: 700; font-size: 1.2rem; color: var(--text-main); text-decoration: none; }
+.logo span { color: var(--accent); }
+.nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; margin-left: 1.5rem; transition: color 0.2s; }
+.nav-links a:hover { color: var(--text-main); }
+
+header { max-width: 1000px; margin: 6rem auto 4rem; text-align: center; padding: 0 1.5rem; }
+
+.pill {
+    display: inline-block; padding: 0.3rem 0.8rem; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 99px; font-size: 0.8rem;
+    color: var(--text-muted); margin-bottom: 2rem;
+}
+.pill span { color: var(--accent); font-weight: 600; margin-right: 0.4rem; }
+
+h1 { 
+    font-family: var(--font-mono); /* Applied Nerd Font */
+    font-size: 4.5rem; 
+    font-weight: 700; 
+    letter-spacing: -0.04em; 
+    line-height: 1.1; 
+    margin-bottom: 1.5rem; 
+}
+
+.glow-text { color: #4ade80; text-shadow: 0 0 24px var(--accent-glow), 0 0 12px var(--accent); }
+
+/* TYPEWRITER HOLLOW CURSOR (With Centering Fix) */
+.cursor {
+    display: inline-block;
+    width: 0.55em;
+    height: 1em;
+    background: transparent;
+    border: 3px solid #4ade80;
+    box-shadow: 0 0 15px var(--accent-glow), inset 0 0 8px var(--accent-glow);
+    vertical-align: text-bottom;
+    margin-left: 4px;
+    margin-bottom: 4px;
+    margin-right: -0.55em; /* Prevents the cursor from shifting the text off-center */
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+p.subtitle { font-size: 1.25rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 3rem; text-align: left; }
+
+.cta-buttons { display: flex; gap: 1rem; justify-content: center; margin-bottom: 4rem; }
+.btn {
+    padding: 0.75rem 1.75rem; border-radius: 6px; font-size: 0.95rem; font-weight: 600;
+    text-decoration: none; transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer; display: inline-block;
+}
+.btn:hover { transform: scale(1.08); }
+.btn-primary { background: var(--accent); color: #000; border: 1px solid var(--accent); box-shadow: 0 0 18px var(--accent-glow); }
+.btn-primary:hover { background: #4ade80; box-shadow: 0 0 28px rgba(74, 222, 128, 0.6); }
+.btn-secondary { background: var(--surface); color: var(--text-main); border: 1px solid var(--border); }
+.btn-secondary:hover { background: #27272a; border-color: #3f3f46; }
+
+.terminal {
+    max-width: 800px; margin: 0 auto 5rem; background: #000;
+    border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); text-align: left;
+}
+
+.terminal-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0.75rem 1rem; display: flex; gap: 8px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot-red { background: #ff5f56; } .dot-yellow { background: #ffbd2e; } .dot-green { background: #27c93f; }
+
+.terminal-body { padding: 2rem; font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.6; }
+
+.demo-visual img { width: 100%; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 1.5rem; }
+.ascii { color: var(--accent); white-space: pre; margin-bottom: 1.5rem; font-size: 0.85rem; text-align: left; }
+
+.install-box {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(255, 255, 255, 0.05); padding: 0.8rem 1rem;
+    border: 1px solid var(--border); border-radius: 6px; margin-top: 1rem;
+}
+.install-box .code-line { margin: 0; }
+.prompt { color: var(--accent); margin-right: 0.5rem; }
+.command { color: #60a5fa; }
+.arg { color: var(--text-main); }
+.copy-btn {
+    background: none; border: none; color: var(--text-muted); cursor: pointer;
+    transition: 0.2s; display: flex; align-items: center; padding: 0.2rem;
+}
+.copy-btn:hover { color: var(--accent); }
+.copy-btn svg { width: 18px; height: 18px; fill: currentColor; }
+.ffmpeg-warning { font-size: 0.75rem; color: #71717a; margin-top: 0.5rem; font-family: var(--font-sans); }
+
+.features-container { max-width: 1000px; margin: 0 auto 5rem; padding: 0 1.5rem; }
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+.feature-card { background: rgba(24, 24, 27, 0.6); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; text-align: left; transition: all 0.2s; }
+.feature-card:hover { border-color: #3f3f46; transform: translateY(-3px); }
+.f-icon { font-size: 1.5rem; margin-bottom: 1rem; }
+.feature-card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+.feature-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; }
+
+.tech-stack { text-align: center; margin: 2rem auto 5rem; max-width: 800px; }
+.tech-stack h4 { color: #52525b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
+.tech-logos { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; color: var(--text-muted); font-family: var(--font-mono); font-size: 0.85rem; }
+
+@media (max-width: 768px) {
+    h1 { font-size: 2.8rem; }
+    header { margin: 4rem auto 2rem; }
+    .terminal { margin: 0 1rem 3rem; }
+    .features-grid { grid-template-columns: 1fr; }
+    .cta-buttons { flex-direction: column; padding: 0 1rem; }
+    .install-box { font-size: 0.8rem; }
+}

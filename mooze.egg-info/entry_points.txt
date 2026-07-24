@@ -1,0 +1,2 @@
+[console_scripts]
+mooze = mooze.main:start
