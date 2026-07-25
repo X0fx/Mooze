@@ -10,13 +10,9 @@
   <img src="https://img.shields.io/badge/License-MIT-F59E0B?style=flat-square&logo=opensourceinitiative&logoColor=white" alt="MIT License" />
 </div>
 
----
-
 <p align="center">
-  <img src="assets/mooze.png" alt="Mooze Dashboard Interface" width="700">
+  <img src="https://raw.githubusercontent.com/X0fx/mooze/main/assets/mooze.png" alt="Mooze Dashboard Interface" width="700">
 </p>
-
----
 
 ## ✨ Features
 
@@ -29,8 +25,6 @@
 * **Self-Healing Updates:** Use the built-in upgrade command to automatically patch Mooze, `yt-dlp`, and FFmpeg binaries to their latest releases.
 * **Power-User Syntax Parser:** Replaces rigid dropdown selections with a strict text-based format specification engine, parsing raw target extensions and custom bitrates on the fly.
 * **Collapsible Environment Control:** A clean, expandable contextual parameter drawer housing environment variables like destination paths and custom format syntax.
-
----
 
 ## 🚀 Installation
 
@@ -49,8 +43,6 @@ git clone [https://github.com/X0fx/mooze.git](https://github.com/X0fx/mooze.git)
 cd mooze
 pip install -e .
 ```
-
----
 
 ## 📖 User Manual
 
@@ -88,8 +80,5 @@ Open **Download Settings** and define your target format using the syntax input 
    * Click **▶ Play** to preview your downloaded song instantly. Click **⏹ Stop** to halt audio.
    * Visit the **History** tab to review previous downloads.
 
----
-
-## ⚠️ Disclaimer
-
-This tool is for educational purposes and personal use only. It relies on publicly available APIs and YouTube search mechanisms. Please respect digital rights and support the artists you listen to.
+> [!WARNING]
+> This tool is for educational purposes and personal use only. It relies on publicly available APIs and YouTube search mechanisms. Please respect digital rights and support the artists you listen to.
