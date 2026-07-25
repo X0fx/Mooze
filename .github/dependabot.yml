@@ -11,5 +11,5 @@ updates:
       interval: "weekly"
       
     # (Optional) Assign reviewers automatically to the PRs
-    # reviewers:
-    #   - "X0fx"
+    reviewers:
+      - "X0fx"
