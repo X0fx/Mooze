@@ -1,3 +1,4 @@
-textual
 yt-dlp
-pillow
+textual
+pygame
+imageio-ffmpeg

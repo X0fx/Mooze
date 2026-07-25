@@ -6,12 +6,11 @@
   <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python Version" />
   <img src="https://img.shields.io/badge/UI-Textual%20TUI-22C55E?style=flat-square&logo=gnuterminal&logoColor=white" alt="Textual TUI" />
   <img src="https://img.shields.io/badge/Engine-yt--dlp-FF0000?style=flat-square&logo=youtube&logoColor=white" alt="yt-dlp Engine" />
-  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-4B5563?style=flat-square" alt="Platform Support" />
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Android%20(Termux)-4B5563?style=flat-square" alt="Platform Support" />
   <img src="https://img.shields.io/badge/License-MIT-F59E0B?style=flat-square&logo=opensourceinitiative&logoColor=white" alt="MIT License" />
 </div>
 
 ---
-
 
 <p align="center">
   <img src="assets/mooze.png" alt="Mooze Dashboard Interface" width="700">
@@ -21,29 +20,15 @@
 
 ## ✨ Features
 
+* **Zero-Config FFmpeg:** Automatically detects global FFmpeg installations or safely downloads a bundled binary via `imageio-ffmpeg` if missing. No manual system configuration required.
 * **Tabbed Workspace Navigation:** Seamless switching between dedicated single-track queries, high-volume batch input feeds, and persistent download history.
 * **Smart Spotify Playlist & Album Scraper:** Paste a single Spotify Playlist or Album link and Mooze will automatically expand and queue every track in the list.
 * **Live Queue Sidebar:** Real-time visual tracking of batch progress with dynamic status indicators (⏳ Pending, ▶ Downloading, ✅ Finished, ❌ Failed).
 * **Built-in Terminal Audio Player:** Preview finished downloads directly inside the terminal dashboard powered by `pygame`.
 * **Persistent Download History:** Automatically logs past downloads to a local history ledger accessible from the UI.
-* **Silent Auto-Updater:** Automatically checks PyPI on startup to notify you when a new release of `mooze` is ready.
+* **Self-Healing Updates:** Use the built-in upgrade command to automatically patch Mooze, `yt-dlp`, and FFmpeg binaries to their latest releases.
 * **Power-User Syntax Parser:** Replaces rigid dropdown selections with a strict text-based format specification engine, parsing raw target extensions and custom bitrates on the fly.
 * **Collapsible Environment Control:** A clean, expandable contextual parameter drawer housing environment variables like destination paths and custom format syntax.
-
----
-
-## 🛠️ Prerequisites
-
-Mooze handles processing down to raw audio streams via `yt-dlp`. An installation of **FFmpeg** must be globally discoverable in your system environment variable path.
-
-### Package Manager Directives
-
-
-| Operating System     | Command                   |
-| :--------------------- | :-------------------------- |
-| **Windows** (WinGet) | `winget install ffmpeg`   |
-| **macOS** (Homebrew) | `brew install ffmpeg`     |
-| **Linux** (APT)      | `sudo apt install ffmpeg` |
 
 ---
 
@@ -55,7 +40,6 @@ Install Mooze directly from PyPI or editable local development mode:
 
 ```Shell
 pip install mooze
-pip install pygame
 ```
 
 ### 2. From Source Tree
@@ -64,7 +48,6 @@ pip install pygame
 git clone [https://github.com/X0fx/mooze.git](https://github.com/X0fx/mooze.git)
 cd mooze
 pip install -e .
-pip install pygame
 ```
 
 ---

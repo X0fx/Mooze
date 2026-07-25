@@ -3,7 +3,22 @@ import urllib.request
 import json
 import re
 import os
+import shutil
 from typing import Any
+
+def get_ffmpeg_path():
+    """Detects system FFmpeg, or falls back to the pip-installed version."""
+    # 1. Check if FFmpeg is already installed globally on the user's system
+    system_ffmpeg = shutil.which("ffmpeg")
+    if system_ffmpeg:
+        return system_ffmpeg
+        
+    # 2. If not globally installed, use the PyPI bundled version
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except ImportError:
+        return None
 
 def expand_if_playlist(url: str) -> list[str]:
     """Scrapes a Spotify playlist or album URL to extract all track links natively."""
@@ -99,8 +114,11 @@ def download_song(search_query: str, save_location: str, format_choice: str, pro
         
     postprocessors.append({'key': 'FFmpegMetadata', 'add_metadata': True})
 
+    ffmpeg_path = get_ffmpeg_path()
+
     options: Any = {
         'format': 'bestaudio/best',
+        'ffmpeg_location': ffmpeg_path,
         'outtmpl': f'{save_location}/%(title)s.%(ext)s',
         'default_search': 'ytsearch1:',
         'noplaylist': True,
@@ -115,5 +133,4 @@ def download_song(search_query: str, save_location: str, format_choice: str, pro
             raise ValueError("Could not extract media metadata.")
         raw_filepath = ydl.prepare_filename(info)
         base_path, _ = os.path.splitext(raw_filepath)
-        # Return the exact final file path so the audio player can target it
         return f"{base_path}.{codec}"
