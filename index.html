@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mooze | Terminal Audio Downloader</title>
     <link rel="stylesheet" href="style.css">
-    
-    <!-- Empty placeholder for the Animated Favicon -->
     <link id="dynamic-favicon" rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
 </head>
 <body>
@@ -18,11 +16,14 @@
         <div class="nav-links">
             <a href="#features">Features</a>
             <a href="https://github.com/X0fx/mooze">GitHub</a>
+            
+            <!-- DONATION LINK -->
+            <a href="https://github.com/sponsors/hm1tsu" target="_blank" class="sponsor-link">Donate <span class="asterisk">*</span></a>
         </div>
     </nav>
 
     <header>
-        <div class="pill"><span>New</span> v1.1.0 is now live on PyPI</div>
+        <div class="pill"><span>New</span> v1.2.1 is now live on PyPI</div>
         
         <h1><span id="tw-text"></span><span class="cursor"></span></h1>
         
@@ -77,30 +78,216 @@
     </div>
 
     <div class="features-container" id="features">
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="f-icon">▦</div>
-                <h3>Visual Canvas</h3>
-                <p>A native workspace tab interface mapping single tracks, batch queues, and historical downloads seamlessly.</p>
+        <h2 class="section-title">Features</h2>
+        
+        <div class="mp-carousel">
+            <button id="prevBtn" class="nav-btn" aria-label="Previous">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+
+            <div class="mp-carousel-content" id="carousel-content">
+                <div class="mp-carousel-item">
+                    <div class="feature-card">
+                        <div class="f-icon">▦</div>
+                        <h3>Spotify Engine</h3>
+                        <p>Automatically resolves Spotify albums and playlists into massive batches.</p>
+                    </div>
+                </div>
+                <div class="mp-carousel-item">
+                    <div class="feature-card">
+                        <div class="f-icon">⚡</div>
+                        <h3>IDM Speed Hack</h3>
+                        <p>Splits tracks into multiple HTTP chunks for lightning-fast downloads.</p>
+                    </div>
+                </div>
+                <div class="mp-carousel-item">
+                    <div class="feature-card">
+                        <div class="f-icon">⚙️</div>
+                        <h3>Zero-Config FFmpeg</h3>
+                        <p>No installation required. Instantly downloads dependencies silently.</p>
+                    </div>
+                </div>
+                <div class="mp-carousel-item">
+                    <div class="feature-card">
+                        <div class="f-icon">✂️</div>
+                        <h3>SponsorBlock Auto-Trim</h3>
+                        <p>Automatically detects and removes music video dialogue and silence.</p>
+                    </div>
+                </div>
+                <div class="mp-carousel-item">
+                    <div class="feature-card">
+                        <div class="f-icon">⊞</div>
+                        <h3>Native UI Player</h3>
+                        <p>Preview downloaded tracks directly inside your terminal dashboard.</p>
+                    </div>
+                </div>
             </div>
-            <div class="feature-card">
-                <div class="f-icon">⊞</div>
-                <h3>Live Audio Player</h3>
-                <p>Preview downloaded tracks directly inside the terminal dashboard powered by the integrated PyGame engine.</p>
-            </div>
-            <div class="feature-card">
-                <div class="f-icon">→</div>
-                <h3>Smart Extraction</h3>
-                <p>Googlebot-masked scraping sequences automatically expand Spotify Playlists and extract lossless master metadata.</p>
-            </div>
+            
+            <button id="nextBtn" class="nav-btn" aria-label="Next">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
         </div>
     </div>
 
-    <!-- Scripts -->
+    <section class="faq-container">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        
+        <details name="faq">
+            <summary>Do I need to install FFmpeg manually?</summary>
+            <p>No! Mooze uses a built-in module to fetch a localized version of FFmpeg directly into your Python environment if it doesn't detect one on your system.</p>
+        </details>
+        
+        <details name="faq">
+            <summary>Where do my downloaded songs go?</summary>
+            <p>You can set your custom download path directly inside the Download Settings tab in the terminal interface.</p>
+        </details>
+        
+        <details name="faq">
+            <summary>Are Spotify downloads 320kbps?</summary>
+            <p>Mooze scrapes the highest possible quality audio stream natively available on YouTube's backend to match your Spotify query, embedding high-res album art directly onto the file.</p>
+        </details>
+    </section>
+
+    <footer>
+        <p>Made with &hearts; by @hm1tsu</p>
+    </footer>
+
     <script src="ascii-plasma.js"></script>
     
     <script>
-        // TYPEWRITER ANIMATION (Reverse & Loop)
+        // --- 1. ROCK-SOLID INFINITE CAROUSEL ENGINE ---
+        document.addEventListener("DOMContentLoaded", () => {
+            const content = document.getElementById('carousel-content');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const originalItems = Array.from(document.querySelectorAll('.mp-carousel-item'));
+            const totalOriginal = originalItems.length;
+
+            // Clone to create 5 massive sets: 2 sets before, 1 original, 2 sets after.
+            originalItems.forEach(item => content.appendChild(item.cloneNode(true)));
+            originalItems.forEach(item => content.appendChild(item.cloneNode(true)));
+            originalItems.slice().reverse().forEach(item => content.prepend(item.cloneNode(true)));
+            originalItems.slice().reverse().forEach(item => content.prepend(item.cloneNode(true)));
+
+            // Helper to get exact width (Card Width + 16px CSS gap)
+            const getCardWidth = () => content.querySelector('.mp-carousel-item').offsetWidth + 16;
+            const getSetWidth = () => getCardWidth() * totalOriginal;
+
+            let isAnimating = false;
+            let autoPlayInterval;
+
+            // Delay setup slightly to let CSS grid/flex widths calculate properly
+            setTimeout(() => {
+                content.style.scrollBehavior = 'auto';
+                content.scrollLeft = getSetWidth() * 2; // Jump securely to the middle set
+                startAutoPlay();
+            }, 100);
+
+            // 0.8s Smooth Easing Function (easeInOutCubic)
+            function smoothScrollTo(targetScroll, duration = 800) {
+                if (isAnimating) return;
+                isAnimating = true;
+
+                content.style.scrollSnapType = 'none'; // Disable CSS snapping to prevent physics fighting
+                const start = content.scrollLeft;
+                const distance = targetScroll - start;
+                const startTime = performance.now();
+
+                const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+                function animate(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    content.scrollLeft = start + distance * ease(progress);
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        content.style.scrollSnapType = 'x mandatory';
+                        isAnimating = false;
+                        checkLoop(); // Verify bounds when resting
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+
+            // Silent Jump Logic for infinite illusion
+            function checkLoop() {
+                const setWidth = getSetWidth();
+                // If dragged back into Set 0 or Set 1, silently jump forward to Set 2/3
+                if (content.scrollLeft < setWidth * 1.5) {
+                    content.style.scrollSnapType = 'none';
+                    content.scrollLeft += setWidth * 2;
+                    content.style.scrollSnapType = 'x mandatory';
+                }
+                // If dragged into Set 4, silently jump backward to Set 2
+                else if (content.scrollLeft > setWidth * 3.5) {
+                    content.style.scrollSnapType = 'none';
+                    content.scrollLeft -= setWidth * 2;
+                    content.style.scrollSnapType = 'x mandatory';
+                }
+            }
+
+            // Debounced scroll listener recovers the loop after manual dragging completes
+            let scrollTimeout;
+            content.addEventListener('scroll', () => {
+                if (!isAnimating && !content.classList.contains('dragging')) {
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(checkLoop, 150);
+                }
+            });
+
+            // Autoplay Controls
+            const startAutoPlay = () => {
+                autoPlayInterval = setInterval(() => {
+                    smoothScrollTo(content.scrollLeft + getCardWidth());
+                }, 5000);
+            };
+            const resetAutoPlay = () => {
+                clearInterval(autoPlayInterval);
+                startAutoPlay();
+            };
+
+            // Buttons
+            prevBtn.addEventListener('click', () => { smoothScrollTo(content.scrollLeft - getCardWidth()); resetAutoPlay(); });
+            nextBtn.addEventListener('click', () => { smoothScrollTo(content.scrollLeft + getCardWidth()); resetAutoPlay(); });
+
+            // Mouse Dragging Engine
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            const endDrag = () => {
+                if (!isDown) return;
+                isDown = false;
+                content.classList.remove('dragging');
+            };
+
+            content.addEventListener('mousedown', (e) => {
+                isDown = true;
+                content.classList.add('dragging');
+                startX = e.pageX - content.offsetLeft;
+                scrollLeft = content.scrollLeft;
+                resetAutoPlay();
+            });
+            
+            content.addEventListener('mouseleave', endDrag);
+            content.addEventListener('mouseup', endDrag);
+            
+            content.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - content.offsetLeft;
+                const walk = (x - startX) * 1.5;
+                content.scrollLeft = scrollLeft - walk;
+            });
+
+            content.addEventListener('touchstart', resetAutoPlay, { passive: true });
+        });
+
+
+        // --- 2. TYPEWRITER ---
         document.addEventListener("DOMContentLoaded", () => {
             const text1 = "Download Music.";
             const text2 = "Visually.";
@@ -113,7 +300,6 @@
             function loopTypewriter() {
                 let currentStr = "";
                 
-                // Build the visible string based on current length
                 if (currentLen <= text1.length) {
                     currentStr = text1.substring(0, currentLen);
                 } else {
@@ -121,32 +307,24 @@
                 }
                 
                 target.innerHTML = currentStr;
-
-                // Adjust typing/deleting speeds
                 let delay = isDeleting ? 30 : 70;
 
-                // Pause slightly between line 1 and line 2 while typing forward
-                if (!isDeleting && currentLen === text1.length) {
-                    delay = 400; 
-                }
-
-                // Sequence triggers
+                if (!isDeleting && currentLen === text1.length) delay = 400; 
                 if (!isDeleting && currentLen === totalLen) {
-                    delay = 10000; // Idle for 10 seconds before deleting
+                    delay = 10000;
                     isDeleting = true;
                 } else if (isDeleting && currentLen === 0) {
                     isDeleting = false;
-                    delay = 500; // Brief pause before starting again
+                    delay = 500;
                 }
 
                 currentLen += isDeleting ? -1 : 1;
                 setTimeout(loopTypewriter, delay);
             }
-            
             setTimeout(loopTypewriter, 500);
         });
 
-        // ANIMATED DYNAMIC FAVICON
+        // --- 3. DYNAMIC FAVICON ---
         const faviconLink = document.getElementById('dynamic-favicon');
         const favCanvas = document.createElement('canvas');
         favCanvas.width = 32;
@@ -155,32 +333,20 @@
         let blinkState = true;
 
         function updateFavicon() {
-            // Draw Black Background
             fCtx.fillStyle = '#000000';
             fCtx.fillRect(0, 0, 32, 32);
-
-            // Draw Terminal Font
-            fCtx.fillStyle = '#4ade80'; // Bright Green
+            fCtx.fillStyle = '#4ade80';
             fCtx.font = 'bold 20px "Fira Code", monospace';
             fCtx.textAlign = 'left';
             fCtx.textBaseline = 'middle';
-            
-            // Draw '>'
             fCtx.fillText('>', 2, 16);
-            
-            // Draw '_' if blinkState is true
-            if (blinkState) {
-                fCtx.fillText('_', 16, 16);
-            }
-
-            // Convert canvas to Data URL and push to the favicon element
+            if (blinkState) fCtx.fillText('_', 16, 16);
             faviconLink.href = favCanvas.toDataURL('image/png');
             blinkState = !blinkState;
         }
-        // Run favicon blinker every 600ms
         setInterval(updateFavicon, 600);
 
-        // COPY BUTTON LOGIC
+        // --- 4. COPY BUTTON ---
         function copyCommand() {
             navigator.clipboard.writeText("pip install mooze").then(() => {
                 const btn = document.getElementById('copyBtn');
