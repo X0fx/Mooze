@@ -119,7 +119,6 @@ class MoozeApp(App):
                         yield TextArea(id="batch-search-input")
                         
                     with TabPane("History", id="history-tab"):
-                        yield Button("↻ Refresh History", id="btn-refresh-history")
                         yield VerticalScroll(id="history-list")
                 
                 with Collapsible(title="Download Settings (Format & Save Path)", id="download-settings"):
@@ -187,11 +186,7 @@ class MoozeApp(App):
     def handle_buttons(self, event: Button.Pressed):
         btn_id = event.button.id
         
-        if btn_id == "btn-refresh-history":
-            self.refresh_history_ui()
-            self.notify("History refreshed.")
-            
-        elif btn_id == "btn-play":
+        if btn_id == "btn-play":
             if not HAS_PYGAME:
                 self.notify("Please install the audio engine: pip install pygame", severity="error")
                 return
@@ -332,6 +327,10 @@ class MoozeApp(App):
                     log_history(song, final_path)
                     self.last_downloaded_path = final_path
                     self.app.call_from_thread(self.update_queue_ui, idx, "done")
+                    
+                    # ADD THIS LINE HERE:
+                    self.app.call_from_thread(self.refresh_history_ui)
+                    
                 except Exception as e:
                     self.app.call_from_thread(self.update_queue_ui, idx, "error")
                     self.app.call_from_thread(self.notify, f"Error: {e}", severity="error")
