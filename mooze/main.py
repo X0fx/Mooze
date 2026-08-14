@@ -304,70 +304,86 @@ class MoozeApp(App):
 
     @work(thread=True)
     def run_engine(self, songs, save_path, audio_format, is_batch):
-        try:
-            expanded_songs = []
-            for song in songs:
-                if song.strip():
-                    expanded_songs.extend(expand_if_playlist(song.strip()))
-            
-            self.app.call_from_thread(self.init_queue_ui, expanded_songs)
-
-            if is_batch and len(expanded_songs) > 1:
-                working_path = os.path.join(save_path, "Mooze_Temp_Batch")
-                os.makedirs(working_path, exist_ok=True)
-            else:
-                working_path = save_path
-
-            for idx, song in enumerate(expanded_songs):
-                self.app.call_from_thread(self.update_queue_ui, idx, "active")
-                self.app.call_from_thread(self.query_one("#my-progress-bar", ProgressBar).update, total=100, progress=0)
+            try:
+                expanded_songs = []
+                for song in songs:
+                    if song.strip():
+                        expanded_songs.extend(expand_if_playlist(song.strip()))
                 
-                try:
-                    final_path = download_song(song, working_path, audio_format, lambda d, t: self.app.call_from_thread(self.query_one("#my-progress-bar", ProgressBar).update, total=t, progress=d))
-                    log_history(song, final_path)
-                    self.last_downloaded_path = final_path
-                    self.app.call_from_thread(self.update_queue_ui, idx, "done")
+                self.app.call_from_thread(self.init_queue_ui, expanded_songs)
+
+                if is_batch and len(expanded_songs) > 1:
+                    working_path = os.path.join(save_path, "Mooze_Temp_Batch")
+                    os.makedirs(working_path, exist_ok=True)
+                else:
+                    working_path = save_path
+
+                # --- TRACKERS ADDED HERE ---
+                success_count = 0
+                fail_count = 0
+
+                for idx, song in enumerate(expanded_songs):
+                    self.app.call_from_thread(self.update_queue_ui, idx, "active")
+                    self.app.call_from_thread(self.query_one("#my-progress-bar", ProgressBar).update, total=100, progress=0)
                     
-                    # ADD THIS LINE HERE:
-                    self.app.call_from_thread(self.refresh_history_ui)
-                    
-                except Exception as e:
-                    self.app.call_from_thread(self.update_queue_ui, idx, "error")
-                    self.app.call_from_thread(self.notify, f"Error: {e}", severity="error")
-            
-            if is_batch and len(expanded_songs) > 1:
-                zip_filename = os.path.join(save_path, "Mooze_Batch_Archive")
-                shutil.make_archive(zip_filename, 'zip', working_path)
-                shutil.rmtree(working_path) 
+                    try:
+                        final_path = download_song(song, working_path, audio_format, lambda d, t: self.app.call_from_thread(self.query_one("#my-progress-bar", ProgressBar).update, total=t, progress=d))
+                        log_history(song, final_path)
+                        self.last_downloaded_path = final_path
+                        self.app.call_from_thread(self.update_queue_ui, idx, "done")
+                        self.app.call_from_thread(self.refresh_history_ui)
+                        
+                        # Count successful download
+                        success_count += 1
+                        
+                    except Exception as e:
+                        self.app.call_from_thread(self.update_queue_ui, idx, "error")
+                        self.app.call_from_thread(self.notify, f"Error: {e}", severity="error")
+                        
+                        # Count failed download
+                        fail_count += 1
                 
-            self.app.call_from_thread(self.enable_player)
-            self.app.call_from_thread(self.set_progress_bar_visible, False)
-            self.app.call_from_thread(self.notify, "All downloads completed successfully!", title="Success")
-        except Exception as e:
-            self.app.call_from_thread(self.set_progress_bar_visible, False)
-            self.app.call_from_thread(self.notify, f"Engine Error: {str(e)}", title="Oops!", severity="error")
+                if is_batch and len(expanded_songs) > 1:
+                    zip_filename = os.path.join(save_path, "Mooze_Batch_Archive")
+                    shutil.make_archive(zip_filename, 'zip', working_path)
+                    shutil.rmtree(working_path) 
+                    
+                self.app.call_from_thread(self.enable_player)
+                self.app.call_from_thread(self.set_progress_bar_visible, False)
+                
+                # --- SMART NOTIFICATION LOGIC ---
+                if fail_count == 0:
+                    self.app.call_from_thread(self.notify, f"Success! {success_count} song(s) downloaded.", title="Success")
+                elif success_count > 0:
+                    self.app.call_from_thread(self.notify, f"Finished with errors. {success_count} downloaded, {fail_count} failed.", title="Warning", severity="warning")
+                else:
+                    self.app.call_from_thread(self.notify, f"All {fail_count} download(s) failed.", title="Failed", severity="error")
+                    
+            except Exception as e:
+                self.app.call_from_thread(self.set_progress_bar_visible, False)
+                self.app.call_from_thread(self.notify, f"Engine Error: {str(e)}", title="Oops!", severity="error")
 
     # =========================================================================
     # COMMAND PALETTE
     # =========================================================================
-    def _apply_and_save_theme(self, theme_name: str):
+def _apply_and_save_theme(self, theme_name: str):
         self.theme = theme_name
         fmt = self.query_one("#format-input", Input).value
         loc = self.query_one("#save-location", Input).value
         save_settings(fmt, loc, theme_name)
         self.notify(f"Theme updated to {theme_name}", severity="information")
 
-    def action_theme_dark(self): self._apply_and_save_theme("textual-dark")
-    def action_theme_light(self): self._apply_and_save_theme("textual-light")
-    def action_theme_dracula(self): self._apply_and_save_theme("dracula")
-    def action_theme_nord(self): self._apply_and_save_theme("nord")
+def action_theme_dark(self): self._apply_and_save_theme("textual-dark")
+def action_theme_light(self): self._apply_and_save_theme("textual-light")
+def action_theme_dracula(self): self._apply_and_save_theme("dracula")
+def action_theme_nord(self): self._apply_and_save_theme("nord")
 
-    def action_clear_inputs(self):
+def action_clear_inputs(self):
         self.query_one("#single-search-input", Input).value = ""
         self.query_one("#batch-search-input", TextArea).text = ""
         self.notify("All inputs cleared.", severity="information")
 
-    def action_open_download_folder(self):
+def action_open_download_folder(self):
         path = self.query_one("#save-location", Input).value
         if not path or not os.path.exists(path):
             self.notify("The save folder does not exist yet!", severity="error")
@@ -379,7 +395,7 @@ class MoozeApp(App):
         except Exception as e:
             self.notify(f"Could not open folder: {e}", severity="error")
 
-    def action_save_png(self):
+def action_save_png(self):
         try:
             from PIL import ImageGrab
             

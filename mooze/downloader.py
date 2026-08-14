@@ -7,11 +7,37 @@ import shutil
 import subprocess
 from typing import Any
 
+def is_termux() -> bool:
+    """Detects if the application is running inside Android's Termux environment."""
+    return "TERMUX_VERSION" in os.environ or os.path.exists("/data/data/com.termux")
+
+def auto_install_termux_ffmpeg() -> bool:
+    """Silently fetches FFmpeg using Termux's pkg manager if missing."""
+    if is_termux() and shutil.which("pkg"):
+        try:
+            # Run pkg update & pkg install ffmpeg automatically
+            subprocess.run(["pkg", "update", "-y"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["pkg", "install", "ffmpeg", "-y"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return True
+        except Exception:
+            return False
+    return False
+
 def get_ffmpeg_path():
+    """Detects system FFmpeg, auto-installs on Termux if missing, or falls back to imageio_ffmpeg."""
     system_ffmpeg = shutil.which("ffmpeg")
     if system_ffmpeg:
         return system_ffmpeg
         
+    # --- TERMUX AUTO-INSTALL HOOK ---
+    if is_termux():
+        print("Termux detected! Auto-installing FFmpeg dependency...")
+        if auto_install_termux_ffmpeg():
+            installed_ffmpeg = shutil.which("ffmpeg")
+            if installed_ffmpeg:
+                return installed_ffmpeg
+
+    # --- DESKTOP FALLBACK ---
     try:
         import imageio_ffmpeg
         return imageio_ffmpeg.get_ffmpeg_exe()
@@ -139,7 +165,11 @@ def download_song(search_query: str, save_location: str, format_choice: str, pro
         'retries': 10,                      
         'fragment_retries': 10,             
         'file_access_retries': 5,           
-        'postprocessor_args': {'ffmpeg': ['-threads', '0']}
+        'postprocessor_args': {'ffmpeg': ['-threads', '0']},
+        
+        # --- THE 403 BYPASS ---
+        # Disguises the scraper as an Android client to bypass web-player blocks
+        'extractor_args': {'youtube': ['player_client=android']}
     }
     
     with yt_dlp.YoutubeDL(options) as ydl:
