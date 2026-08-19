@@ -160,25 +160,12 @@ def download_song(search_query: str, save_location: str, format_choice: str, pro
         'writethumbnail': ydl_embed_art, 
         'progress_hooks': [my_hook], 
         'postprocessors': postprocessors,
-        
-        # --- 1. REMOVED IDM SPEED HACKS ---
-        # Concurrent downloads and massive chunk sizes are deleted to prevent bot-flagging.
-        
         'retries': 10,                      
         'fragment_retries': 10,             
         'file_access_retries': 5,           
         'postprocessor_args': {'ffmpeg': ['-threads', '0']},
         
-        # --- 2. ANTI-RATE LIMITING ---
-        # Adds a slight delay between background data requests to mimic human behavior.
-        'sleep_interval_requests': 2,
-        
-        # --- 3. THE PROPER BYPASS ---
-        'impersonate': '', 
-        # Make sure to change 'edge' to your actual browser (e.g., 'chrome', 'firefox').
-        # CRITICAL: That browser MUST be completely closed when you click download!
-        'cookiesfrombrowser': ('edge', ), 
-        'extractor_args': {'youtube': ['player_client=android']}
+        'remote_components': ['ejs:github'],
     }
     
     with yt_dlp.YoutubeDL(options) as ydl:

@@ -3,7 +3,7 @@ from textual.widgets import Header, Footer, Input, Button, TextArea, Label, Prog
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual import on, work, events
 from textual.binding import Binding
-from downloader import download_song, expand_if_playlist 
+from .downloader import download_song, expand_if_playlist 
 import os
 import shutil
 import json
@@ -272,17 +272,30 @@ class MoozeApp(App):
     def init_queue_ui(self, songs):
         self.query_one("#queue-sidebar").display = True
         q_list = self.query_one("#queue-list")
+        
+        # 1. Clear the visual container (old widgets will vanish on the next frame)
         q_list.remove_children()
+        
+        # 2. Create a fresh list to track the active widget objects directly
+        self.current_queue_widgets = []
+        
         for idx, s in enumerate(songs):
             display_name = s[:30] + "..." if len(s) > 30 else s
-            lbl = Label(f"⏳ {display_name}", id=f"q-item-{idx}")
+            
+            # 3. Create the Label WITHOUT a hardcoded ID
+            lbl = Label(f"⏳ {display_name}")
             setattr(lbl, "song_name", display_name)
+            
+            # 4. Save the widget reference and mount it
+            self.current_queue_widgets.append(lbl)
             q_list.mount(lbl)
 
     def update_queue_ui(self, index, state):
         try:
-            lbl = self.query_one(f"#q-item-{index}", Label)
+            # 5. Fetch the exact widget object directly from our list instead of querying an ID
+            lbl = self.current_queue_widgets[index]
             name = getattr(lbl, "song_name", "Song")
+            
             if state == "active":
                 lbl.update(f"▶ {name}")
                 lbl.add_class("queue-active")
@@ -304,28 +317,27 @@ class MoozeApp(App):
 
     @work(thread=True)
     def run_engine(self, songs, save_path, audio_format, is_batch):
-            try:
-                expanded_songs = []
-                for song in songs:
-                    if song.strip():
-                        expanded_songs.extend(expand_if_playlist(song.strip()))
+        try:
+            expanded_songs = []
+            for song in songs:
+                if song.strip():
+                    expanded_songs.extend(expand_if_playlist(song.strip()))
+            
+            self.app.call_from_thread(self.init_queue_ui, expanded_songs)
+
+            if is_batch and len(expanded_songs) > 1:
+                working_path = os.path.join(save_path, "Mooze_Temp_Batch")
+                os.makedirs(working_path, exist_ok=True)
+            else:
+                working_path = save_path
+
+            success_count = 0
+            fail_count = 0
+
+            for idx, song in enumerate(expanded_songs):
+                self.app.call_from_thread(self.update_queue_ui, idx, "active")
+                self.app.call_from_thread(self.query_one("#my-progress-bar", ProgressBar).update, total=100, progress=0)
                 
-                self.app.call_from_thread(self.init_queue_ui, expanded_songs)
-
-                if is_batch and len(expanded_songs) > 1:
-                    working_path = os.path.join(save_path, "Mooze_Temp_Batch")
-                    os.makedirs(working_path, exist_ok=True)
-                else:
-                    working_path = save_path
-
-                # --- TRACKERS ADDED HERE ---
-                success_count = 0
-                fail_count = 0
-
-                for idx, song in enumerate(expanded_songs):
-                    self.app.call_from_thread(self.update_queue_ui, idx, "active")
-                    self.app.call_from_thread(self.query_one("#my-progress-bar", ProgressBar).update, total=100, progress=0)
-                    
                 try:
                     final_path = download_song(song, working_path, audio_format, lambda d, t: self.app.call_from_thread(self.query_one("#my-progress-bar", ProgressBar).update, total=t, progress=d))
                     log_history(song, final_path)
@@ -333,18 +345,17 @@ class MoozeApp(App):
                     self.app.call_from_thread(self.update_queue_ui, idx, "done")
                     self.app.call_from_thread(self.refresh_history_ui)
                     
-                    # Count successful download
                     success_count += 1
                     
                 except Exception as e:
                     error_msg = str(e)
                     self.app.call_from_thread(self.update_queue_ui, idx, "error")
+                    self.app.call_from_thread(self.notify, f"Error: {error_msg}", severity="error", timeout=10)
+                    fail_count += 1
                     
-                    # --- AUTO-HEALING PROTOCOL ---
                     if "403" in error_msg or "Forbidden" in error_msg:
                         self.app.call_from_thread(self.notify, "YouTube firewall detected! Auto-patching engine...", severity="warning", timeout=5)
                         try:
-                            # Silently upgrade yt-dlp in the background
                             subprocess.run([sys.executable, "-m", "pip", "install", "-U", "yt-dlp"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                             self.app.call_from_thread(self.notify, "Patch complete! Please restart Mooze to apply the fix.", title="Update Successful", severity="information", timeout=15)
                         except Exception as update_err:
@@ -352,50 +363,48 @@ class MoozeApp(App):
                     else:
                         self.app.call_from_thread(self.notify, f"Error: {e}", severity="error")
                         
-                    # Count failed download
                     fail_count += 1
+            
+            if is_batch and len(expanded_songs) > 1:
+                zip_filename = os.path.join(save_path, "Mooze_Batch_Archive")
+                shutil.make_archive(zip_filename, 'zip', working_path)
+                shutil.rmtree(working_path) 
                 
-                if is_batch and len(expanded_songs) > 1:
-                    zip_filename = os.path.join(save_path, "Mooze_Batch_Archive")
-                    shutil.make_archive(zip_filename, 'zip', working_path)
-                    shutil.rmtree(working_path) 
-                    
-                self.app.call_from_thread(self.enable_player)
-                self.app.call_from_thread(self.set_progress_bar_visible, False)
+            self.app.call_from_thread(self.enable_player)
+            self.app.call_from_thread(self.set_progress_bar_visible, False)
+            
+            if fail_count == 0:
+                self.app.call_from_thread(self.notify, f"Success! {success_count} song(s) downloaded.", title="Success")
+            elif success_count > 0:
+                self.app.call_from_thread(self.notify, f"Finished with errors. {success_count} downloaded, {fail_count} failed.", title="Warning", severity="warning")
+            else:
+                self.app.call_from_thread(self.notify, f"All {fail_count} download(s) failed.", title="Failed", severity="error")
                 
-                # --- SMART NOTIFICATION LOGIC ---
-                if fail_count == 0:
-                    self.app.call_from_thread(self.notify, f"Success! {success_count} song(s) downloaded.", title="Success")
-                elif success_count > 0:
-                    self.app.call_from_thread(self.notify, f"Finished with errors. {success_count} downloaded, {fail_count} failed.", title="Warning", severity="warning")
-                else:
-                    self.app.call_from_thread(self.notify, f"All {fail_count} download(s) failed.", title="Failed", severity="error")
-                    
-            except Exception as e:
-                self.app.call_from_thread(self.set_progress_bar_visible, False)
-                self.app.call_from_thread(self.notify, f"Engine Error: {str(e)}", title="Oops!", severity="error")
+        except Exception as e:
+            self.app.call_from_thread(self.set_progress_bar_visible, False)
+            self.app.call_from_thread(self.notify, f"Engine Error: {str(e)}", title="Oops!", severity="error")
 
     # =========================================================================
     # COMMAND PALETTE
     # =========================================================================
-def _apply_and_save_theme(self, theme_name: str):
+    def _apply_and_save_theme(self, theme_name: str):
         self.theme = theme_name
         fmt = self.query_one("#format-input", Input).value
         loc = self.query_one("#save-location", Input).value
         save_settings(fmt, loc, theme_name)
         self.notify(f"Theme updated to {theme_name}", severity="information")
 
-def action_theme_dark(self): self._apply_and_save_theme("textual-dark")
-def action_theme_light(self): self._apply_and_save_theme("textual-light")
-def action_theme_dracula(self): self._apply_and_save_theme("dracula")
-def action_theme_nord(self): self._apply_and_save_theme("nord")
+    def action_theme_dark(self): self._apply_and_save_theme("textual-dark")
+    def action_theme_light(self): self._apply_and_save_theme("textual-light")
+    def action_theme_dracula(self): self._apply_and_save_theme("dracula")
+    def action_theme_nord(self): self._apply_and_save_theme("nord")
 
-def action_clear_inputs(self):
+    def action_clear_inputs(self):
         self.query_one("#single-search-input", Input).value = ""
         self.query_one("#batch-search-input", TextArea).text = ""
         self.notify("All inputs cleared.", severity="information")
 
-def action_open_download_folder(self):
+    def action_open_download_folder(self):
         path = self.query_one("#save-location", Input).value
         if not path or not os.path.exists(path):
             self.notify("The save folder does not exist yet!", severity="error")
@@ -407,7 +416,7 @@ def action_open_download_folder(self):
         except Exception as e:
             self.notify(f"Could not open folder: {e}", severity="error")
 
-def action_save_png(self):
+    def action_save_png(self):
         try:
             from PIL import ImageGrab
             

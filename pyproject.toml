@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mooze"
-version = "1.0.31"
+version = "1.0.4"
 authors = [
   { name="Reyhan Janus", email="reyhanjanus@gmail.com" },
 ]
@@ -20,6 +20,7 @@ classifiers = [
 dependencies = [
     "textual>=0.38.1",
     "yt-dlp>=2023.10.13",
+    "yt-dlp-ejs",
     "pillow>=10.0.0"
 ]
 

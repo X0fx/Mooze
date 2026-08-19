@@ -1,4 +1,9 @@
-yt-dlp
-textual
-pygame
-imageio-ffmpeg
+textual>=0.38.1
+pillow>=10.0.0
+pygame>=2.5.0
+
+yt-dlp[default]
+yt-dlp-ejs
+
+
+imageio-ffmpeg>=0.4.9

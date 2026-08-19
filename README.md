@@ -16,15 +16,15 @@
 
 ## ✨ Features
 
-* **Zero-Config FFmpeg:** Automatically detects global FFmpeg installations or safely downloads a bundled binary via `imageio-ffmpeg` if missing. No manual system configuration required.
-* **Tabbed Workspace Navigation:** Seamless switching between dedicated single-track queries, high-volume batch input feeds, and persistent download history.
-* **Smart Spotify Playlist & Album Scraper:** Paste a single Spotify Playlist or Album link and Mooze will automatically expand and queue every track in the list.
-* **Live Queue Sidebar:** Real-time visual tracking of batch progress with dynamic status indicators (⏳ Pending, ▶ Downloading, ✅ Finished, ❌ Failed).
-* **Built-in Terminal Audio Player:** Preview finished downloads directly inside the terminal dashboard powered by `pygame`.
-* **Persistent Download History:** Automatically logs past downloads to a local history ledger accessible from the UI.
-* **Self-Healing Updates:** Use the built-in upgrade command to automatically patch Mooze, `yt-dlp`, and FFmpeg binaries to their latest releases.
-* **Power-User Syntax Parser:** Replaces rigid dropdown selections with a strict text-based format specification engine, parsing raw target extensions and custom bitrates on the fly.
-* **Collapsible Environment Control:** A clean, expandable contextual parameter drawer housing environment variables like destination paths and custom format syntax.
+- **Zero-Config FFmpeg:** Automatically detects global FFmpeg installations or safely downloads a bundled binary via `imageio-ffmpeg` if missing. No manual system configuration required.
+- **Tabbed Workspace Navigation:** Seamless switching between dedicated single-track queries, high-volume batch input feeds, and persistent download history.
+- **Smart Spotify Playlist & Album Scraper:** Paste a single Spotify Playlist or Album link and Mooze will automatically expand and queue every track in the list.
+- **Live Queue Sidebar:** Real-time visual tracking of batch progress with dynamic status indicators (⏳ Pending, ▶ Downloading, ✅ Finished, ❌ Failed).
+- **Built-in Terminal Audio Player:** Preview finished downloads directly inside the terminal dashboard powered by `pygame`.
+- **Persistent Download History:** Automatically logs past downloads to a local history ledger accessible from the UI.
+- **Self-Healing Updates:** Use the built-in upgrade command to automatically patch Mooze, `yt-dlp`, and FFmpeg binaries to their latest releases.
+- **Power-User Syntax Parser:** Replaces rigid dropdown selections with a strict text-based format specification engine, parsing raw target extensions and custom bitrates on the fly.
+- **Collapsible Environment Control:** A clean, expandable contextual parameter drawer housing environment variables like destination paths and custom format syntax.
 
 ## 🚀 Installation
 
@@ -41,7 +41,7 @@ pip install mooze
 ```Shell
 git clone [https://github.com/X0fx/mooze.git](https://github.com/X0fx/mooze.git)
 cd mooze
-pip install -e .
+pip install -r requirements.txt
 ```
 
 ## 📖 User Manual
@@ -50,11 +50,10 @@ Once installed, simply type `mooze` in any terminal to launch the dashboard.
 
 ### 🎛️ Audio Format Syntax Matrix
 
-Open **Download Settings** and define your target format using the syntax input (`.[ext], [bitrate]`). Bitrates are bounded between **92 kbps** and  **320 kbps** .
-
+Open **Download Settings** and define your target format using the syntax input (`.[ext], [bitrate]`). Bitrates are bounded between **92 kbps** and **320 kbps** .
 
 | **Syntax Input** | **Extracted Codec** | **Output Fidelity**     | **Metadata Embedding**     |
-| ------------------ | --------------------- | ------------------------- | ---------------------------- |
+| ---------------- | ------------------- | ----------------------- | -------------------------- |
 | `.mp3, 320`      | MP3                 | High-Bitrate Master     | Enabled (Cover Art + Tags) |
 | `.mp3, 128`      | MP3                 | Standard Compressed     | Enabled (Cover Art + Tags) |
 | `.m4a, 192`      | M4A                 | AAC Container Stream    | Enabled (Cover Art + Tags) |
@@ -65,20 +64,19 @@ Open **Download Settings** and define your target format using the syntax input 
 ### 📥 Execution Modes
 
 1. Single Track / Playlist Query
+   - Select the **Single Download** tab.
+   - Paste a track name, raw Spotify track link, or a **Spotify Playlist / Album link** .
+   - Click **Start Download** . The Live Queue sidebar will expand automatically if processing multiple songs!
 
-   * Select the **Single Download** tab.
-   * Paste a track name, raw Spotify track link, or a  **Spotify Playlist / Album link** .
-   * Click  **Start Download** . The Live Queue sidebar will expand automatically if processing multiple songs!
 2. Batch Links
+   - Select the **Batch Download** tab.
+   - Paste multiple Spotify links (one per line).
+   - Click **Start Download** . Multi-song batches are automatically zipped into `Mooze_Batch_Archive.zip`.
 
-   * Select the **Batch Download** tab.
-   * Paste multiple Spotify links (one per line).
-   * Click  **Start Download** . Multi-song batches are automatically zipped into `Mooze_Batch_Archive.zip`.
 3. Live Preview & Audio Player
-
-   * Once a track completes, the **▶ Play** button on the bottom Audio Bar will unlock.
-   * Click **▶ Play** to preview your downloaded song instantly. Click **⏹ Stop** to halt audio.
-   * Visit the **History** tab to review previous downloads.
+   - Once a track completes, the **▶ Play** button on the bottom Audio Bar will unlock.
+   - Click **▶ Play** to preview your downloaded song instantly. Click **⏹ Stop** to halt audio.
+   - Visit the **History** tab to review previous downloads.
 
 > [!WARNING]
 > This tool is for educational purposes and personal use only. It relies on publicly available APIs and YouTube search mechanisms. Please respect digital rights and support the artists you listen to.
