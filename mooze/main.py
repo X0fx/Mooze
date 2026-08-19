@@ -3,7 +3,7 @@ from textual.widgets import Header, Footer, Input, Button, TextArea, Label, Prog
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual import on, work, events
 from textual.binding import Binding
-from .downloader import download_song, expand_if_playlist 
+from downloader import download_song, expand_if_playlist 
 import os
 import shutil
 import json

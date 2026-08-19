@@ -160,28 +160,25 @@ def download_song(search_query: str, save_location: str, format_choice: str, pro
         'writethumbnail': ydl_embed_art, 
         'progress_hooks': [my_hook], 
         'postprocessors': postprocessors,
-        'concurrent_fragment_downloads': 5, 
-        'http_chunk_size': 10485760,        
+        
+        # --- 1. REMOVED IDM SPEED HACKS ---
+        # Concurrent downloads and massive chunk sizes are deleted to prevent bot-flagging.
+        
         'retries': 10,                      
         'fragment_retries': 10,             
         'file_access_retries': 5,           
         'postprocessor_args': {'ffmpeg': ['-threads', '0']},
         
-        # --- THE SMART TV & IPv4 FIX ---
-        # 1. Stops Python 3.13 from crashing
+        # --- 2. ANTI-RATE LIMITING ---
+        # Adds a slight delay between background data requests to mimic human behavior.
+        'sleep_interval_requests': 2,
+        
+        # --- 3. THE PROPER BYPASS ---
         'impersonate': '', 
-        
-        # 2. FORCES IPv4: YouTube heavily flags IPv6 addresses for botting. 
-        # Routing through 0.0.0.0 forces IPv4 and bypasses most IP-bans.
-        'source_address': '0.0.0.0', 
-        
-        # 3. Disguises the scraper as a Smart TV and skips the JavaScript bot-checks entirely.
-        'extractor_args': {
-            'youtube': [
-                'player_client=tv,mweb', 
-                'player_skip=webpage,configs,js' 
-            ]
-        }
+        # Make sure to change 'edge' to your actual browser (e.g., 'chrome', 'firefox').
+        # CRITICAL: That browser MUST be completely closed when you click download!
+        'cookiesfrombrowser': ('edge', ), 
+        'extractor_args': {'youtube': ['player_client=android']}
     }
     
     with yt_dlp.YoutubeDL(options) as ydl:

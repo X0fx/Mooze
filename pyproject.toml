@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mooze"
-version = "1.0.3"
+version = "1.0.31"
 authors = [
   { name="Reyhan Janus", email="reyhanjanus@gmail.com" },
 ]
