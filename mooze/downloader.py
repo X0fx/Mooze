@@ -167,9 +167,21 @@ def download_song(search_query: str, save_location: str, format_choice: str, pro
         'file_access_retries': 5,           
         'postprocessor_args': {'ffmpeg': ['-threads', '0']},
         
-        # --- THE 403 BYPASS ---
-        # Disguises the scraper as an Android client to bypass web-player blocks
-        'extractor_args': {'youtube': ['player_client=android']}
+        # --- THE SMART TV & IPv4 FIX ---
+        # 1. Stops Python 3.13 from crashing
+        'impersonate': '', 
+        
+        # 2. FORCES IPv4: YouTube heavily flags IPv6 addresses for botting. 
+        # Routing through 0.0.0.0 forces IPv4 and bypasses most IP-bans.
+        'source_address': '0.0.0.0', 
+        
+        # 3. Disguises the scraper as a Smart TV and skips the JavaScript bot-checks entirely.
+        'extractor_args': {
+            'youtube': [
+                'player_client=tv,mweb', 
+                'player_skip=webpage,configs,js' 
+            ]
+        }
     }
     
     with yt_dlp.YoutubeDL(options) as ydl:

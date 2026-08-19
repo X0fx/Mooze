@@ -326,22 +326,34 @@ class MoozeApp(App):
                     self.app.call_from_thread(self.update_queue_ui, idx, "active")
                     self.app.call_from_thread(self.query_one("#my-progress-bar", ProgressBar).update, total=100, progress=0)
                     
-                    try:
-                        final_path = download_song(song, working_path, audio_format, lambda d, t: self.app.call_from_thread(self.query_one("#my-progress-bar", ProgressBar).update, total=t, progress=d))
-                        log_history(song, final_path)
-                        self.last_downloaded_path = final_path
-                        self.app.call_from_thread(self.update_queue_ui, idx, "done")
-                        self.app.call_from_thread(self.refresh_history_ui)
-                        
-                        # Count successful download
-                        success_count += 1
-                        
-                    except Exception as e:
-                        self.app.call_from_thread(self.update_queue_ui, idx, "error")
+                try:
+                    final_path = download_song(song, working_path, audio_format, lambda d, t: self.app.call_from_thread(self.query_one("#my-progress-bar", ProgressBar).update, total=t, progress=d))
+                    log_history(song, final_path)
+                    self.last_downloaded_path = final_path
+                    self.app.call_from_thread(self.update_queue_ui, idx, "done")
+                    self.app.call_from_thread(self.refresh_history_ui)
+                    
+                    # Count successful download
+                    success_count += 1
+                    
+                except Exception as e:
+                    error_msg = str(e)
+                    self.app.call_from_thread(self.update_queue_ui, idx, "error")
+                    
+                    # --- AUTO-HEALING PROTOCOL ---
+                    if "403" in error_msg or "Forbidden" in error_msg:
+                        self.app.call_from_thread(self.notify, "YouTube firewall detected! Auto-patching engine...", severity="warning", timeout=5)
+                        try:
+                            # Silently upgrade yt-dlp in the background
+                            subprocess.run([sys.executable, "-m", "pip", "install", "-U", "yt-dlp"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                            self.app.call_from_thread(self.notify, "Patch complete! Please restart Mooze to apply the fix.", title="Update Successful", severity="information", timeout=15)
+                        except Exception as update_err:
+                            self.app.call_from_thread(self.notify, "Auto-patch failed. Please run 'pip install -U yt-dlp' manually.", severity="error")
+                    else:
                         self.app.call_from_thread(self.notify, f"Error: {e}", severity="error")
                         
-                        # Count failed download
-                        fail_count += 1
+                    # Count failed download
+                    fail_count += 1
                 
                 if is_batch and len(expanded_songs) > 1:
                     zip_filename = os.path.join(save_path, "Mooze_Batch_Archive")
