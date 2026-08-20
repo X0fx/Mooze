@@ -1,6 +1,6 @@
 textual>=0.38.1
 pillow>=10.0.0
-pygame>=2.5.0
+pygame>=2.6.1
 
 yt-dlp[default]
 yt-dlp-ejs
